@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS `wp_friends` (
+  `friend_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `user_ID` int(11) NOT NULL default '0',
+  `friend_user_ID` int(11) NOT NULL default '0',
+  `friend_approved` int(1) NOT NULL default '1',
+  PRIMARY KEY  (`friend_ID`)
+) ENGINE=MyISAM;
