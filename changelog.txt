@@ -1,9 +1,12 @@
 === Friends ===
-Authors: Ivan Shaovchev, Andrew Billits (Incsub)
+Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
-= 1.0.4 =
+= 1.1.5 =
+* Changed the logic of approving, removing, rejecting friends
+
+= 1.1.4 =
 * Compatibility update for WordPress 3.1
 * Update Notifications script added
 * Bug fixes 

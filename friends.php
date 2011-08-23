@@ -3,14 +3,14 @@
 Plugin Name: Friends
 Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
-Author: Ivan Shaovchev & Andrew Billits (Incsub)
-Author URI: http://ivan.sh
-Version: 1.1.4
+Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub)
+Author URI: http://premium.wpmudev.org  
+Version: 1.1.5
 Network: true
 WDP ID: 62
 */
 
-/* 
+/*
 Copyright 2007-2011 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
@@ -43,25 +43,25 @@ SITE_NAME');
 if ( $friends_enable_approval ) {
 	$friends_add_notification_subject = __('[SITE_NAME] FROM_USER has requested to add you as a friend');
 	$friends_add_notification_content = __('Dear TO_USER,
-	
+
 	We would like to inform you that FROM_USER has requested to add you as a friend. Please login to your admin panel to approve or reject this request.
-	
+
 	Thanks,
 	SITE_NAME');
 
 	$friends_request_approval_notification_subject = __('[SITE_NAME] Friend Request Approved');
 	$friends_request_approval_notification_content = __('Dear TO_USER,
-	
+
 	We would like to inform you that REQUESTED_USER has approved your request to add them as a friend.
-	
+
 	Thanks,
 	SITE_NAME');
-	
+
 	$friends_request_rejection_notification_subject = __('[SITE_NAME] Friend Request Denied');
 	$friends_request_rejection_notification_content = __('Dear TO_USER,
-	
+
 	We would like to inform you that REQUESTED_USER has denied your request to add them as a friend.
-	
+
 	Thanks,
 	SITE_NAME');
 }
@@ -89,7 +89,7 @@ function friends_global_install() {
       `friend_approved` int(1) NOT NULL default '1',
       PRIMARY KEY  (`friend_ID`)
     ) ENGINE=MyISAM;";
-    
+
     $wpdb->query( $friends_table1 );
 }
 
@@ -98,7 +98,7 @@ function friends_plug_pages() {
 
     add_menu_page( __('Friends', 'friends' ), __('Friends', 'friends' ), 'read', 'friends', 'friends_output' );
     add_submenu_page( 'friends', __('Friends', 'friends' ), __('Find Friends', 'friends' ), 'read', 'find-friends', 'friends_find_output' );
-    
+
 	if ( $friends_enable_approval ) {
 		$tmp_friend_requests_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" . $user_ID . "' AND friend_approved = '0'");
 		add_submenu_page( 'friends', __( 'Friends', 'friends' ), __( 'Friend Requests', 'friends' ) . ' (' . $tmp_friend_requests_count . ')', 'read', 'friend-requests', 'friends_requests_output' );
@@ -131,7 +131,7 @@ function friends_add_notification( $tmp_to_uid, $tmp_from_uid ) {
 		$tmp_to_email =  $wpdb->get_var("SELECT user_email FROM " . $wpdb->users . " WHERE ID = '" . $tmp_to_uid . "'");
 		$tmp_from_username =  $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_from_uid . "'");
 		$tmp_from_displayname =  $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_from_uid . "'");
-		
+
 		$message_content = $friends_add_notification_content;
 		$message_content = str_replace( "SITE_NAME", $current_site->site_name, $message_content );
 		$message_content = str_replace( "SITE_URL", 'http://' . $current_site->domain . '', $message_content );
@@ -143,7 +143,7 @@ function friends_add_notification( $tmp_to_uid, $tmp_from_uid ) {
 			$message_content = str_replace( "FROM_USER", $tmp_from_displayname, $message_content );
 		}
 		$message_content = str_replace( "\'", "'", $message_content );
-		
+
 		$subject_content = $friends_add_notification_subject;
 		$subject_content = str_replace( "SITE_NAME", $current_site->site_name, $subject_content );
 		if ($tmp_from_displayname != $tmp_from_username){
@@ -151,13 +151,13 @@ function friends_add_notification( $tmp_to_uid, $tmp_from_uid ) {
 		} else {
 			$subject_content = str_replace( "FROM_USER", $tmp_from_displayname, $subject_content );
 		}
-		
+
 		$admin_email = get_site_option('admin_email');
 		if ($admin_email == ''){
 			$admin_email = 'admin@' . $current_site->domain;
 		}
 		$from_email = $admin_email;
-		
+
 		$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 		wp_mail($tmp_to_email, $subject_content, $message_content, $message_headers);
 	}
@@ -170,7 +170,7 @@ function friends_request_approval_notification( $tmp_requesting_uid, $tmp_reques
 		$tmp_requesting_email =  $wpdb->get_var("SELECT user_email FROM " . $wpdb->users . " WHERE ID = '" . $tmp_requesting_uid . "'");
 		$tmp_requested_username =  $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_requested_uid . "'");
 		$tmp_requested_displayname =  $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_requested_uid . "'");
-		
+
 		$message_content = $friends_request_approval_notification_content;
 		$message_content = str_replace( "SITE_NAME", $current_site->site_name, $message_content );
 		$message_content = str_replace( "SITE_URL", 'http://' . $current_site->domain . '', $message_content );
@@ -182,7 +182,7 @@ function friends_request_approval_notification( $tmp_requesting_uid, $tmp_reques
 			$message_content = str_replace( "REQUESTED_USER", $tmp_requested_displayname, $message_content );
 		}
 		$message_content = str_replace( "\'", "'", $message_content );
-		
+
 		$subject_content = $friends_request_approval_notification_subject;
 		$subject_content = str_replace( "SITE_NAME", $current_site->site_name, $subject_content );
 		if ($tmp_requested_displayname != $tmp_requested_username){
@@ -190,13 +190,13 @@ function friends_request_approval_notification( $tmp_requesting_uid, $tmp_reques
 		} else {
 			$subject_content = str_replace( "REQUESTED_USER", $tmp_requested_displayname, $subject_content );
 		}
-		
+
 		$admin_email = get_site_option('admin_email');
 		if ($admin_email == ''){
 			$admin_email = 'admin@' . $current_site->domain;
 		}
 		$from_email = $admin_email;
-		
+
 		$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 		wp_mail($tmp_requesting_email, $subject_content, $message_content, $message_headers);
 	}
@@ -209,7 +209,7 @@ function friends_request_rejection_notification( $tmp_requesting_uid, $tmp_reque
 		$tmp_requesting_email =  $wpdb->get_var("SELECT user_email FROM " . $wpdb->users . " WHERE ID = '" . $tmp_requesting_uid . "'");
 		$tmp_requested_username =  $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_requested_uid . "'");
 		$tmp_requested_displayname =  $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_requested_uid . "'");
-		
+
 		$message_content = $friends_request_rejection_notification_content;
 		$message_content = str_replace( "SITE_NAME", $current_site->site_name, $message_content );
 		$message_content = str_replace( "SITE_URL", 'http://' . $current_site->domain . '', $message_content );
@@ -221,7 +221,7 @@ function friends_request_rejection_notification( $tmp_requesting_uid, $tmp_reque
 			$message_content = str_replace( "REQUESTED_USER", $tmp_requested_displayname, $message_content );
 		}
 		$message_content = str_replace( "\'", "'", $message_content );
-		
+
 		$subject_content = $friends_request_rejection_notification_subject;
 		$subject_content = str_replace( "SITE_NAME", $current_site->site_name, $subject_content );
 		if ($tmp_requested_displayname != $tmp_requested_username){
@@ -229,13 +229,13 @@ function friends_request_rejection_notification( $tmp_requesting_uid, $tmp_reque
 		} else {
 			$subject_content = str_replace( "REQUESTED_USER", $tmp_requested_displayname, $subject_content );
 		}
-		
+
 		$admin_email = get_site_option('admin_email');
 		if ($admin_email == ''){
 			$admin_email = 'admin@' . $current_site->domain;
 		}
 		$from_email = $admin_email;
-		
+
 		$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 		wp_mail($tmp_requesting_email, $subject_content, $message_content, $message_headers);
 	}
@@ -297,17 +297,17 @@ function friends_list_output() {
 					?>
 					<table><td>
 					<fieldset>
-					<?php 
-					
+					<?php
+
 					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-					
-					if( $start == 0 ) { 
+
+					if( $start == 0 ) {
 						echo __('Previous Page');
-					} elseif( $start <= 30 ) { 
+					} elseif( $start <= 30 ) {
 						echo '<a href="friends.php?start=0&' . $order_sort . ' ">' . __('Previous Page') . '</a>';
 					} else {
 						echo '<a href="friends.php?start=' . ( $start - $num ) . '&' . $order_sort . '">' . __('Previous Page') . '</a>';
-					} 
+					}
 					if ( $next ) {
 						echo '&nbsp;||&nbsp;<a href="friends.php?start=' . ( $start + $num ) . '&' . $order_sort . '">' . __('Next Page') . '</a>';
 					} else {
@@ -321,7 +321,7 @@ function friends_list_output() {
 				}
 				if ($messaging_current_version != ''){
 					echo "
-					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 					<thead><tr>
 					<th scope='col'>" . __('Friend') . "</th>
 					<th scope='col'>" . __('Avatar') . "</th>
@@ -333,7 +333,7 @@ function friends_list_output() {
 					";
 				} else {
 					echo "
-					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 					<thead><tr>
 					<th scope='col'>" . __('Friend') . "</th>
 					<th scope='col'>" . __('Avatar') . "</th>
@@ -383,7 +383,20 @@ function friends_list_output() {
 		break;
 		//---------------------------------------------------//
 		case "remove":
-			$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] . "' AND user_ID = '" . $user_ID . "'" );
+            //get all data of friend (us)
+            $query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='" .  $_GET['fid'] . "' AND user_ID = '" . $user_ID . "'";
+            $delete_friend = $wpdb->get_row( $query, ARRAY_A );
+
+            //get second friend_ID
+            $tmp_friend_ID = $wpdb->get_var("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" . $delete_friend['friend_user_ID'] . "' AND  friend_user_ID = '" . $delete_friend['user_ID'] . "'");
+
+            //delete from second friend
+            if ( $tmp_friend_ID )
+                $wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $tmp_friend_ID . "'" );
+
+            //delete from us
+            $wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] . "' AND user_ID = '" . $user_ID . "'" );
+
 			echo "
 			<SCRIPT LANGUAGE='JavaScript'>
                 window.location='admin.php?page=friends&updated=true&updatedmsg=" . urlencode(__('Friend Removed!')) . "';
@@ -407,7 +420,7 @@ function friends_list_output() {
 					<th scope="row"><?php _e('Message') ?></th>
 					<td><input type="text" name="message_content" id="message_content" style="width: 95%" tabindex='2' maxlength="200" value="" />
 					<br />
-					<?php //_e('Required') ?></td> 
+					<?php //_e('Required') ?></td>
 					</tr>
 					</table>
 				<p class="submit">
@@ -446,7 +459,7 @@ function friends_find_output() {
             </form>
             <?php
 			if ($tmp_search_terms != ''){
-				$query = "SELECT ID, display_name, user_login FROM " . $wpdb->base_prefix . "users 
+				$query = "SELECT ID, display_name, user_login FROM " . $wpdb->base_prefix . "users
 					WHERE (user_login LIKE '%" . $tmp_search_terms . "%'
 					OR user_nicename LIKE '%" . $tmp_search_terms . "%'
 					OR user_email LIKE '%" . $tmp_search_terms . "%'
@@ -454,7 +467,7 @@ function friends_find_output() {
 					AND ID != '" . $user_ID . "'
 					ORDER BY user_nicename ASC LIMIT 50";
 				$tmp_search_results = $wpdb->get_results( $query, ARRAY_A );
-				
+
 				if (count($tmp_search_results) > 0){
 					echo '<ul id="friend_results">';
 					foreach ($tmp_search_results as $tmp_search_result){
@@ -467,7 +480,7 @@ function friends_find_output() {
 						echo '(<a href="admin.php?page=find-friends&action=add&id=' . $tmp_search_result['ID'] . '&search_terms=' . rawurlencode($tmp_search_terms) . '">' . __('Add') . '</a>) ';
 					}
 					if ($tmp_search_result['display_name'] != $tmp_search_result['user_login']){
-						echo $tmp_search_result['display_name'] . ' (' . $tmp_search_result['user_login'] . ')';			
+						echo $tmp_search_result['display_name'] . ' (' . $tmp_search_result['user_login'] . ')';
 					} else {
 						echo $tmp_search_result['display_name'];
 					}
@@ -547,17 +560,17 @@ function friends_requests_output() {
 					?>
 					<table><td>
 					<fieldset>
-					<?php 
-					
+					<?php
+
 					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-					
-					if( $start == 0 ) { 
+
+					if( $start == 0 ) {
 						echo __('Previous Page');
-					} elseif( $start <= 30 ) { 
+					} elseif( $start <= 30 ) {
 						echo '<a href="admin.php?page=friend-requests&start=0&' . $order_sort . ' ">' . __('Previous Page') . '</a>';
 					} else {
 						echo '<a href="admin.php?page=friend-requests&start=' . ( $start - $num ) . '&' . $order_sort . '">' . __('Previous Page') . '</a>';
-					} 
+					}
 					if ( $next ) {
 						echo '&nbsp;||&nbsp;<a href="admin.php?page=friend-requests&start=' . ( $start + $num ) . '&' . $order_sort . '">' . __('Next Page') . '</a>';
 					} else {
@@ -570,7 +583,7 @@ function friends_requests_output() {
 					<?php
 				}
 				echo "
-				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
                 <thead>
                     <tr>
                         <th scope='col'>" . __('ID') . "</th>
@@ -626,6 +639,17 @@ function friends_requests_output() {
 
 			$wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" . $_GET['fid'] . "' AND friend_user_ID = '" . $user_ID . "'" );
 
+
+            $query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID ='" . $user_ID . "' AND friend_user_ID = '" . $tmp_requesting_user_id . "' AND friend_approved = '0'";
+            $tmp_friend = $wpdb->get_row( $query, ARRAY_A );
+
+            if ( is_array( $tmp_friend ) ) {
+                $wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" . $tmp_friend['friend_ID'] . "'" );
+            } else {
+                $wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "friends (user_ID, friend_user_ID, friend_approved) VALUES ( '" . $user_ID . "','" . $tmp_requesting_user_id . "','1' )" );
+            }
+
+
 			friends_request_approval_notification( $tmp_requesting_user_id, $user_ID );
 
 			echo "
@@ -638,7 +662,21 @@ function friends_requests_output() {
 		case "reject":
 			$tmp_requesting_user_id = $wpdb->get_var("SELECT user_ID FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] . "'");
 
-			$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] . "' AND friend_user_ID = '" . $user_ID . "'" );
+
+            //get all data of second friend
+            $query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='" .  $_GET['fid'] . "' AND friend_user_ID = '" . $user_ID . "'";
+            $reject_friend = $wpdb->get_row( $query, ARRAY_A );
+
+            //get us friend_ID
+            $tmp_friend_ID = $wpdb->get_var("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" . $reject_friend['friend_user_ID'] . "' AND  friend_user_ID = '" . $reject_friend['user_ID'] . "'");
+
+            //delete from second friend
+            if ( $tmp_friend_ID )
+                $wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $tmp_friend_ID . "'" );
+
+            //delete from us
+            $wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] . "' AND friend_user_ID = '" . $user_ID . "'" );
+
 
 			friends_request_rejection_notification($tmp_requesting_user_id,$user_ID);
 
