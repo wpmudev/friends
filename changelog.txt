@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
+= 1.1.6 =
+* fixed links to friends sites
+
 = 1.1.5 =
 * Changed the logic of approving, removing, rejecting friends
 

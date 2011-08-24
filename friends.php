@@ -4,8 +4,8 @@ Plugin Name: Friends
 Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub)
-Author URI: http://premium.wpmudev.org  
-Version: 1.1.5
+Author URI: http://premium.wpmudev.org
+Version: 1.1.6
 Network: true
 WDP ID: 62
 */
@@ -356,7 +356,7 @@ function friends_list_output() {
                             echo "<td valign='top'><strong>" . $tmp_display_name . "</strong></td>";
                         }
                         echo "<td valign='top'>" . get_avatar($tmp_friend['friend_user_ID'],'16','') . "</td>";
-                        $tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog');
+                        $tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog', true);
                         $tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
                         $tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" . $tmp_blog_ID . "'");
                         if ($messaging_current_version != ''){
@@ -610,7 +610,7 @@ function friends_requests_output() {
                             echo "<td valign='top'><strong>" . $tmp_display_name . "</strong></td>";
                         }
                         echo "<td valign='top'>" . get_avatar($tmp_friend['user_ID'],'16','') . "</td>";
-                        $tmp_blog_ID = get_user_meta( $tmp_friend['user_ID'], 'primary_blog' );
+                        $tmp_blog_ID = get_user_meta( $tmp_friend['user_ID'], 'primary_blog', true );
                         $tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
                         $tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" . $tmp_blog_ID . "'");
                         if ($tmp_blog_url != ''){
@@ -827,7 +827,7 @@ function widget_friends_init() {
 						echo '<ul>';
 						foreach ( $tmp_friends as $tmp_friend ){
 							echo '<li>';
-							$tmp_blog_ID = get_user_meta( $tmp_friend['friend_user_ID'], 'primary_blog' );
+							$tmp_blog_ID = get_user_meta( $tmp_friend['friend_user_ID'], 'primary_blog', true );
 							$tmp_blog_url = get_blog_option( $tmp_blog_ID, 'siteurl' );
 							$tmp_user_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
 							if ($tmp_user_display_name == ''){
@@ -843,7 +843,7 @@ function widget_friends_init() {
 						echo '</ul>';
 					} else {
 						foreach ($tmp_friends as $tmp_friend){
-							$tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog');
+							$tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog', true);
 							$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
 							$tmp_user_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
 							if ($tmp_user_display_name == ''){
