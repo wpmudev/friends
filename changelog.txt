@@ -3,6 +3,11 @@ Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub)
 
 == Changelog ==
 
+= 1.1.7 =
+* Fixed sending the quick message from the Messaging plugin;
+* Removed redirection on the Messaging plugin after sending the quick message;
+
+
 = 1.1.6 =
 * fixed links to friends sites
 

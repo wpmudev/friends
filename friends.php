@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.6
+Version: 1.1.7
 Network: true
 WDP ID: 62
 */
@@ -74,10 +74,59 @@ register_activation_hook( __FILE__, 'friends_global_install' );
 
 add_action('wpabar_menuitems', 'friends_admin_bar');
 add_action('admin_menu', 'friends_plug_pages');
+add_action('admin_init', 'send_quick_message');
 
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
+
+// Send quick message from the messaging plugin
+function send_quick_message() {
+    if ( isset( $_POST['quick_message'] ) ) {
+
+        $url =  get_option( 'siteurl' ) . "/wp-admin/admin.php?page=messaging_new&action=process";
+
+        foreach ( $_COOKIE as $key => $value ) {
+            if ( ! ( empty( $key ) || empty($value ) || 'PHPSESSID' == $key ) )
+                $cookies_header .= $key . '=' .  urlencode( $value ) . '; ';
+        }
+        $cookies_header = substr( $cookies_header, 0, -2 );
+
+        $data = array(
+            'message_to'        => $_POST['message_to'],
+            'message_subject'   => $_POST['message_subject'],
+            'message_content'   => $_POST['message_content']
+         );
+
+        $args =  array(
+            'method'    => 'POST',
+            'timeout'   => 30,
+            'body'      => $data,
+            'headers'   => array( 'cookie' => $cookies_header )
+        );
+
+        $response = wp_remote_post( $url, $args );
+
+//        $ch = curl_init();
+//        curl_setopt($ch, CURLOPT_URL, $url);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+//        curl_setopt($ch, CURLOPT_COOKIE, $cookies_header);
+//        curl_setopt($ch, CURLOPT_POST, TRUE);
+//        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+//        $response = curl_exec($ch);
+
+        if( is_wp_error( $response ) ) {
+            //some problems
+            wp_redirect( add_query_arg( array( 'page' => 'friends', 'updated' => 'true', 'updatedmsg' => urlencode( __( 'Some problem with sent message.', 'email-newsletter' ) ) ), 'admin.php' ) );
+        } else {
+            //message sent
+            wp_redirect( add_query_arg( array( 'page' => 'friends', 'updated' => 'true', 'updatedmsg' => urlencode( __( 'Message sent.', 'email-newsletter' ) ) ), 'admin.php' ) );
+        }
+        exit;
+    }
+}
+
 
 function friends_global_install() {
 	global $wpdb;
@@ -262,9 +311,9 @@ function friends_add( $tmp_uid, $tmp_friend_uid, $tmp_approved ) {
 function friends_list_output() {
 	global $wpdb, $wp_roles, $current_user, $user_ID, $current_site, $messaging_current_version;
 
-	if ( isset( $_GET['updated'] ) ) {
-		?><div id="message" class="updated fade"><p><?php _e('' . urldecode( $_GET['updatedmsg'] ) . '') ?></p></div><?php
-	}
+    if ( isset( $_GET['updated'] ) ) {
+        ?><div id="message" class="updated fade"><p><?php _e('' . urldecode( $_GET['updatedmsg'] ) . '') ?></p></div><?php
+    }
 	echo '<div class="wrap">';
     $action = ( isset( $_GET['action'] ) ) ? $_GET['action'] : NULL;
 	switch( $action ) {
@@ -412,7 +461,7 @@ function friends_list_output() {
 			}
 			?>
 			<h2><?php _e('Send Message To') ?> <em><?php echo $tmp_display_name; ?></em></h2>
-				<form name="new_message" method="POST" action="inbox.php?page=new&action=process">
+				<form name="new_message" method="POST">
                 <input type="hidden" name="message_to" value="<?php echo $tmp_user_login; ?>" />
                 <input type="hidden" name="message_subject" value="<?php _e('Quick Message') ?>" />
 					<table class="form-table">
@@ -424,7 +473,7 @@ function friends_list_output() {
 					</tr>
 					</table>
 				<p class="submit">
-				<input type="submit" name="Submit" value="<?php _e('Send') ?>" />
+				<input type="submit" name="quick_message" value="<?php _e('Send') ?>" />
 				</p>
 				</form>
             <?php
