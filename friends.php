@@ -3,9 +3,9 @@
 Plugin Name: Friends
 Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
-Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub)
+Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.7
+Version: 1.1.8
 Network: true
 WDP ID: 62
 */
@@ -144,14 +144,18 @@ function friends_global_install() {
 
 function friends_plug_pages() {
 	global $wpdb, $user_ID, $friends_enable_approval;
+	$count_output = '';
+	
+	if ( $friends_enable_approval ) {
+		$tmp_friend_requests_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" . $user_ID . "' AND friend_approved = '0'");
+		if ($tmp_friend_requests_count > 0) {
+			$count_output = '&nbsp;<span class="update-plugins"><span class="updates-count count-' . $tmp_friend_requests_count . '">' . $tmp_friend_requests_count . '</span></span>';
+		}
+	}
 
     add_menu_page( __('Friends', 'friends' ), __('Friends', 'friends' ), 'read', 'friends', 'friends_output' );
     add_submenu_page( 'friends', __('Friends', 'friends' ), __('Find Friends', 'friends' ), 'read', 'find-friends', 'friends_find_output' );
-
-	if ( $friends_enable_approval ) {
-		$tmp_friend_requests_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" . $user_ID . "' AND friend_approved = '0'");
-		add_submenu_page( 'friends', __( 'Friends', 'friends' ), __( 'Friend Requests', 'friends' ) . ' (' . $tmp_friend_requests_count . ')', 'read', 'friend-requests', 'friends_requests_output' );
-	}
+	add_submenu_page( 'friends', __( 'Friends', 'friends' ), __( 'Friend Requests', 'friends' ) . $count_output, 'read', 'friend-requests', 'friends_requests_output' );
 	add_submenu_page( 'friends', __( 'Friends', 'friends' ), __( 'Notifications', 'friends' ), 'read', 'friend-notifications', 'friends_notifications_output' );
 }
 
@@ -936,5 +940,3 @@ function wdp_un_check() {
 add_action( 'admin_notices', 'wdp_un_check', 5 );
 add_action( 'network_admin_notices', 'wdp_un_check', 5 );
 endif;
-
-?>
