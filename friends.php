@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.8
+Version: 1.1.9
 Network: true
 WDP ID: 62
 */
@@ -902,13 +902,19 @@ function widget_friends_init() {
 							if ($tmp_user_display_name == ''){
 								$tmp_user_display_name = $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
 							}
+
+							$friend_avatar = get_avatar($tmp_friend['friend_user_ID'], 32, '', $tmp_user_display_name);
+
 							if ( $tmp_blog_url != '' ){
+
 								?>
-								<a href="<?php echo $tmp_blog_url; ?>" style="text-decoration:none;border:0px;"><img src="http://<?php echo $current_site->domain . $current_site->path . 'avatar/user-' . $tmp_friend['friend_user_ID'] . '-32.png'; ?>" alt="<?php echo $tmp_user_display_name; ?>" title="<?php echo $tmp_user_display_name; ?>" /></a>
+								<?php /* ?><a href="<?php echo $tmp_blog_url; ?>" style="text-decoration:none;border:0px;"><img src="http://<?php echo $current_site->domain . $current_site->path . 'avatar/user-' . $tmp_friend['friend_user_ID'] . '-32.png'; ?>" alt="<?php echo $tmp_user_display_name; ?>" title="<?php echo $tmp_user_display_name; ?>" /></a><?php */ ?>
+								<a href="<?php echo $tmp_blog_url; ?>" style="text-decoration:none;border:0px;" title="<?php echo $tmp_user_display_name; ?>"><?php echo $friend_avatar ?></a>
 								<?php
 							} else {
 								?>
-								<img src="http://<?php echo $current_site->domain . $current_site->path . 'avatar/user-' . $tmp_friend['friend_user_ID'] . '-32.png'; ?>" alt="<?php echo $tmp_user_display_name; ?>" title="<?php echo $tmp_user_display_name; ?>" />
+								<?php /* ?><img src="http://<?php echo $current_site->domain . $current_site->path . 'avatar/user-' . $tmp_friend['friend_user_ID'] . '-32.png'; ?>" alt="<?php echo $tmp_user_display_name; ?>" title="<?php echo $tmp_user_display_name; ?>" /><?php */ ?>
+								<?php echo $friend_avatar ?>
 								<?php
 							}
 						}
@@ -940,3 +946,4 @@ function wdp_un_check() {
 add_action( 'admin_notices', 'wdp_un_check', 5 );
 add_action( 'network_admin_notices', 'wdp_un_check', 5 );
 endif;
+?>

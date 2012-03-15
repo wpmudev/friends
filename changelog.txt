@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (
 
 == Changelog ==
 
+= 1.1.9 =
+* Updated widget output to use standard avatar functions. 
+
 = 1.1.8 =
 * Changed presentation for friend for notification alert count.
 
