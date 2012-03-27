@@ -3,6 +3,9 @@ Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (
 
 == Changelog ==
 
+= 1.2.0 =
+* Corrected logic when parsing email response. Code was not correctly replacing the requestor's name "TO_NAME" should have been "REQUESTING_USER" in reply emails.
+
 = 1.1.9 =
 * Updated widget output to use standard avatar functions. 
 
@@ -42,5 +45,3 @@ Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (
 
 = 1.0.0 =
 * Initial Release
-
-63094-1331563719

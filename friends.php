@@ -5,13 +5,13 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Ivan Shaovchev & Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.1.9
+Version: 1.2.0
 Network: true
 WDP ID: 62
 */
 
 /*
-Copyright 2007-2011 Incsub (http://incsub.com)
+Copyright 2007-2012 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -50,7 +50,7 @@ if ( $friends_enable_approval ) {
 	SITE_NAME');
 
 	$friends_request_approval_notification_subject = __('[SITE_NAME] Friend Request Approved');
-	$friends_request_approval_notification_content = __('Dear TO_USER,
+	$friends_request_approval_notification_content = __('Dear REQUESTING_USER,
 
 	We would like to inform you that REQUESTED_USER has approved your request to add them as a friend.
 
@@ -58,7 +58,7 @@ if ( $friends_enable_approval ) {
 	SITE_NAME');
 
 	$friends_request_rejection_notification_subject = __('[SITE_NAME] Friend Request Denied');
-	$friends_request_rejection_notification_content = __('Dear TO_USER,
+	$friends_request_rejection_notification_content = __('Dear REQUESTING_USER,
 
 	We would like to inform you that REQUESTED_USER has denied your request to add them as a friend.
 
@@ -946,4 +946,3 @@ function wdp_un_check() {
 add_action( 'admin_notices', 'wdp_un_check', 5 );
 add_action( 'network_admin_notices', 'wdp_un_check', 5 );
 endif;
-?>
