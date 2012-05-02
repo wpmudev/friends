@@ -1,0 +1,21 @@
+.friends-wrap input[type="text"], .friends-wrap textarea {
+	width: 100%;
+}
+
+.friends-wrap ul.friends-instructions {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.friends-wrap ul.friends-instructions li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.friends-wrap ul.friends-instructions li span.label {
+    float: left;
+    font-weight: bold;
+    width: 140px;
+}

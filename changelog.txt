@@ -1,7 +1,21 @@
 === Friends ===
-Authors: Ivan Shaovchev, Andrew Billits, Andrey Shipilov (Incsub), Paul Menard (Incsub)
+Authors: Paul Menard (Incsub)
 
 == Changelog ==
+
+= 1.2.1 =
+* Added support for custom email template code. Three sets are supports Friend Request, Friend Approve, Friend Rejection. Each Email template set supports subject and content with replaceable tokens. Email templates are controlled via the Network admin Settings page only. 
+
+* Added internationalization to all display texts.
+
+* Somewhat major request of logic and display loops to bring plugin up to modern WordPress coding standards. 
+
+* Added contextual help 
+
+* Added better support for other plugins like Messages. 
+
+* Moved the Email Notifications from the Friend menu to under the User profile form since this is a user specific setting and not global to the plugin functionality. 
+
 
 = 1.2.0 =
 * Corrected logic when parsing email response. Code was not correctly replacing the requestor's name "TO_NAME" should have been "REQUESTING_USER" in reply emails.
