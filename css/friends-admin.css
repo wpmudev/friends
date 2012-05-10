@@ -19,3 +19,30 @@
     font-weight: bold;
     width: 140px;
 }
+
+.friends-wrap ul#friend-results {
+	
+}
+
+.friends-wrap ul#friend-results li {
+	height: 32px;
+	margin: 10px 0;
+}
+
+.friends-wrap ul#friend-results li span.friend-status {
+    float: left;
+    padding-top: 10px;
+    width: 60px;
+	text-align: center;
+}
+
+.friends-wrap ul#friend-results li span.friend-avatar {
+	width: 32px;
+	padding: 0 10px;
+	float: left;
+}
+
+.friends-wrap ul#friend-results li span.friend-name {
+    padding-top: 10px;
+	float: left;
+}

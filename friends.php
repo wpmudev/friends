@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.2.1
+Version: 1.2.2
 Network: true
 WDP ID: 62
 Domain Path: languages
@@ -357,11 +357,13 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 					$this->_pagehooks['friends-settings'], 
 					'normal', 'core');
 
+/*
 				add_meta_box('friends-display-panel-messaging', 
 					__('Messaging', WPMUDEV_FRIENDS_I18N_DOMAIN), 
 					array(&$this, 'friends_metabox_show_messaging'), 
 					$this->_pagehooks['friends-settings'], 
 					'normal', 'core');
+*/
 
 			} else {
 
@@ -688,11 +690,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 		        $url =  get_option( 'siteurl' ) . "/wp-admin/admin.php?page=messaging_new&action=process";
 
-		        foreach ( $_COOKIE as $key => $value ) {
-		            if ( ! ( empty( $key ) || empty($value ) || 'PHPSESSID' == $key ) )
-		                $cookies_header .= $key . '=' .  urlencode( $value ) . '; ';
-		        }
-		        $cookies_header = substr( $cookies_header, 0, -2 );
+		        //foreach ( $_COOKIE as $key => $value ) {
+		        //    if ( ! ( empty( $key ) || empty($value ) || 'PHPSESSID' == $key ) )
+		        //        $cookies_header .= $key . '=' .  urlencode( $value ) . '; ';
+		        //}
+		        //$cookies_header = substr( $cookies_header, 0, -2 );
 
 		        $data = array(
 		            'message_to'        => $_POST['message_to'],
@@ -707,8 +709,14 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		            'headers'   => array( 'cookie' => $cookies_header )
 		        );
 
-		        $response = wp_remote_post( $url, $args );
+				echo "url=[". $url ."]<br />";
+				echo "args<pre>"; print_r($args); echo "</pre>";
+				//exit;
 
+		        $response = wp_remote_post( $url, $args );
+				echo "response<pre>"; print_r($response); echo "</pre>";
+				exit;
+				
 		//        $ch = curl_init();
 		//        curl_setopt($ch, CURLOPT_URL, $url);
 		//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -833,7 +841,12 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 								<th scope='col'><?php _e('Friend', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
 								<th scope='col'><?php _e('Avatar', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
 								<th scope='col'><?php _e('Actions', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
-								<th scope='col'></th>
+
+								<?php
+									if ($this->_settings['plugins']['messaging'] == true) {
+										?><th scope='col'></th><?php
+									}
+								?>
 								<th scope='col'></th>
 							</tr></thead>
 							<tbody id='the-list'>
@@ -851,7 +864,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	                        		} else {
 	                            		echo "<td valign='top'><strong>" . $tmp_display_name . "</strong></td>";
 	                        		}
-	                        		echo "<td valign='top'>" . get_avatar($tmp_friend['friend_user_ID'],'16','') . "</td>";
+	                        		echo "<td valign='top'>" . get_avatar($tmp_friend['friend_user_ID'],'32','') . "</td>";
 
 	                        		$tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog', true);
 	                        		$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
@@ -862,12 +875,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
                             			echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" 
 											. $tmp_user_login . "' rel='permalink' class='edit'>" 
 											. __('Send Message', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
-									} else {
-										
-	                            		echo "<td valign='top'><a href='admin.php?page=friends&action=send_message&fid=" 
-											. $tmp_friend['friend_user_ID'] . "' rel='permalink' class='edit'>" 
-											. __('Send Message', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
-									}
+									} 
 
 
 	                        		if ($tmp_blog_url != '') {
@@ -944,53 +952,105 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 			?>
 			<div class="wrap friends-wrap">
-				<h2><?php _e('Find Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>&nbsp;&nbsp;<em style="font-size:14px;"><?php _e("Search by friends display name, username or email address", WPMUDEV_FRIENDS_I18N_DOMAIN) ?></em></h2>
-				<form id="posts-filter" action="admin.php?page=find-friends" method="get">
+				<h2><?php _e('Find Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></h2>
+				<form id="posts-filter" action="admin.php" method="get">
+					<input type="hidden" name="page" value="find-friends" />
 	                <p id="post-search">
+						<label for="post-search-input"><?php _e("Search by friends display name, username or email address", 
+							WPMUDEV_FRIENDS_I18N_DOMAIN) ?></label><br />
 	                    <input id="post-search-input" name="search_terms" value="<?php 
-							if (isset($_GET['search_terms'])) { echo esc_attr($_GET['search_terms']); } ?>" type="text">
-	                    <input value="<?php _e('Search', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" class="button" type="submit">
+							if (isset($_GET['search_terms'])) { echo esc_attr($_GET['search_terms']); } ?>" type="text"  /><br />
+
+						<input type="checkbox" id="search_show_friends" name="search_show_friends" <?php if (isset($_GET['search_show_friends'])) { echo ' checked="checked" '; } ?> />&nbsp;<label for="search_show_friends"><?php _e('Show existing friends', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></label><br />
+							
+	                    <input value="<?php _e('Search', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" class="button" type="submit" />
 	                </p>
 				</form>
 				<?php
-					$tmp_search_terms = ( isset( $_POST['search_terms'] ) ) ? $_POST['search_terms'] : NULL;
-					if ( empty( $tmp_search_terms ) ){
-						$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? rawurldecode( $_GET['search_terms'] ) : NULL;
-					}
+					//echo "_GET<pre>"; print_r($_GET); echo "</pre>";
+					
+					$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? esc_attr($_GET['search_terms']) : NULL;
 					if ($tmp_search_terms != '') {
-						$query = "SELECT ID, display_name, user_login FROM " . $wpdb->base_prefix . "users
+						$query = "SELECT ID, display_name, user_login, user_email FROM " . $wpdb->base_prefix . "users
 							WHERE (user_login LIKE '%" . $tmp_search_terms . "%'
 							OR user_nicename LIKE '%" . $tmp_search_terms . "%'
 							OR user_email LIKE '%" . $tmp_search_terms . "%'
 							OR display_name LIKE '%" . $tmp_search_terms . "%')
 							AND ID != '" . $user_ID . "'
 							ORDER BY user_nicename ASC LIMIT 50";
+						//echo "query=[".$query."]<br />";
+						
 						$tmp_search_results = $wpdb->get_results( $query, ARRAY_A );
 
-						if (count($tmp_search_results) > 0){
-							echo '<ul id="friend_results">';
-							foreach ($tmp_search_results as $tmp_search_result){
+						//echo "tmp_search_results<pre>"; print_r($tmp_search_results); echo "</pre>";
 
-							echo '<li>';
-							$tmp_friend_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" 
-								. $tmp_search_result['ID'] . "' AND user_ID = '" . $user_ID . "'");
 
-							if ($tmp_friend_count > 0){
-								echo '(<a style="color:#999999;text-decoration:none;border:0px;">' 
-									. __('Pending', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>) ';
-							} else {
-								echo '(<a href="admin.php?page=find-friends&action=add&id=' . $tmp_search_result['ID'] . '&search_terms=' 
-									. rawurlencode($tmp_search_terms) . '">' . __('Add', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>) ';
-							}
+						if (count($tmp_search_results) > 0) {
+							echo '<ul id="friend-results">';
+							
+							foreach ($tmp_search_results as $tmp_search_result) {
 
-							if ($tmp_search_result['display_name'] != $tmp_search_result['user_login']){
-								echo $tmp_search_result['display_name'] . ' (' . $tmp_search_result['user_login'] . ')';
-							} else {
-								echo $tmp_search_result['display_name'];
-							}
+								$friend_output = '';
+								
+								//$sql_str = "SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" 
+								//	. $tmp_search_result['ID'] . "' AND user_ID = '" . $user_ID . "' AND friend_approved = 0";
+								
+								$sql_str = "SELECT 
+									f_from.friend_ID f_friend_ID, 
+									f_from.user_ID f_user_ID, 
+									f_from.friend_user_ID f_friend_user_ID, 
+									f_from.friend_approved f_approved, 
+									f_to.friend_ID t_friend_ID, 
+									f_to.user_ID t_user_ID, 
+									f_to.friend_user_ID t_friend_user_ID, 
+									f_to.friend_approved t_approved
+									FROM " . $wpdb->base_prefix . "friends as f_from
+									LEFT JOIN " . $wpdb->base_prefix . "friends as f_to 
+									ON f_to.friend_user_ID = f_from.user_ID 
+									AND f_to.friend_user_ID = ". $user_ID ." AND f_to.user_ID = ". $tmp_search_result['ID'] ."
+									WHERE f_from.user_ID = ". $user_ID ." AND f_from.friend_user_ID = ". $tmp_search_result['ID'];
+								//echo "sql_str=[". $sql_str ."]<br />";	
+							
+								$tmp_friend_results = $wpdb->get_row($sql_str);
+								//echo "tmp_friend_results<pre>"; print_r($tmp_friend_results); echo "</pre>";
+							
+								if ((isset($tmp_friend_results->f_approved)) && ($tmp_friend_results->f_approved == 1)
+								 && (isset($tmp_friend_results->t_approved)) && ($tmp_friend_results->t_approved == 1)) {
 
-							echo '</li>';
-							//=========================================================//
+									if (isset($_GET['search_show_friends'])) {
+										$friend_output .= '<span class="friend-status">(<a style="color:#999999;text-decoration:none;border:0px;">' 
+											. __('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>)</span>&nbsp;';
+									} else {
+										continue;
+									}
+								
+								
+								} else if ((isset($tmp_friend_results->f_approved)) && ($tmp_friend_results->f_approved == 0)
+									 && (!isset($tmp_friend_results->t_approved)) ) {
+								
+									$friend_output .= '<span class="friend-status">(<a style="color:#999999;text-decoration:none;border:0px;">' 
+										. __('Pending', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>)</span>&nbsp;';
+								} else {
+									$friend_output .= '<span class="friend-status">(<a href="admin.php?page=find-friends&action=add&id=' 
+										. $tmp_search_result['ID'] . '&search_terms=' 
+										. rawurlencode($tmp_search_terms) . '">' . __('Add', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>)</span>&nbsp;';
+								}
+							
+
+								$friend_avatar = get_avatar($tmp_search_result['user_email'], '32', '');
+								if ($friend_avatar)
+									$friend_output .= '<span class="friend-avatar">'. $friend_avatar."</span>&nbsp;";
+								
+								if ($tmp_search_result['display_name'] != $tmp_search_result['user_login']){
+									$friend_output .= '<span class="friend-name">'. $tmp_search_result['display_name'] 
+										. ' (' . $tmp_search_result['user_login'] . ')</span>';
+								} else {
+									$friend_output .= '<span class="friend-name">'. $tmp_search_result['display_name'] .'</span>';
+								}
+
+								if (strlen($friend_output))
+									echo '<li>'. $friend_output .'</li>';
+
 							}
 							echo '</ul>';
 						} else {
@@ -1112,7 +1172,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		                            echo "<td valign='top'><strong>" . $tmp_display_name . "</strong></td>";
 		                        }
 
-		                        echo "<td valign='top'>" . get_avatar($tmp_friend['user_ID'],'16','') . "</td>";
+		                        echo "<td valign='top'>" . get_avatar($tmp_friend['user_ID'],'32','') . "</td>";
 		                        $tmp_blog_ID = get_user_meta( $tmp_friend['user_ID'], 'primary_blog', true );
 		                        $tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
 		                        $tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" 
@@ -1692,12 +1752,13 @@ function widget_friends_init() {
 								$tmp_user_display_name = $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
 							}
 
-							$friend_avatar = get_avatar($tmp_friend['friend_user_ID'], 32, '', $tmp_user_display_name);
+							$friend_avatar = get_avatar($tmp_friend['friend_user_ID'], '32', '', $tmp_user_display_name);
 
 							if ( $tmp_blog_url != '' ){
 
 								?>
-								<a href="<?php echo $tmp_blog_url; ?>" style="text-decoration:none;border:0px;" title="<?php echo $tmp_user_display_name; ?>"><?php echo $friend_avatar ?></a>
+								<a href="<?php echo $tmp_blog_url; ?>" style="text-decoration:none;border:0px;" title="<?php 
+									echo $tmp_user_display_name; ?>"><?php echo $friend_avatar ?></a>
 								<?php
 							} else {
 								?>

@@ -3,6 +3,9 @@ Authors: Paul Menard (Incsub)
 
 == Changelog ==
 
+= 1.2.2 =
+* Corrected URL error on find friend page. Also, corrected find friend display to not show existing friends as pending. Finally, added option on find friends form to show all existing friends included with non-friends. Added some presentation styling to the find friends output. 
+
 = 1.2.1 =
 * Added support for custom email template code. Three sets are supports Friend Request, Friend Approve, Friend Rejection. Each Email template set supports subject and content with replaceable tokens. Email templates are controlled via the Network admin Settings page only. 
 
