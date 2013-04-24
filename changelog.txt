@@ -67,5 +67,3 @@ Authors: Paul Menard (Incsub)
 
 = 1.0.0 =
 * Initial Release
-
-63094-1353371105
