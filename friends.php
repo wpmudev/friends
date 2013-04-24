@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.2.2
+Version: 1.2.3
 Network: true
 WDP ID: 62
 Domain Path: languages
@@ -26,8 +26,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php');
+
 if (!defined('WPMUDEV_FRIENDS_I18N_DOMAIN'))
 	define('WPMUDEV_FRIENDS_I18N_DOMAIN', 'friends');
+
+$FRIENDS_ALLOWED_CONTENT_TAGS = array(
+	'a' 		=> 	array('href' => array(),'title' => array()),
+  	'p'			=>	array(),
+	'em'		=>	array(),
+	'ul'		=>	array(),
+	'ol'		=>	array(),
+	'li'		=>	array(),
+	'br'		=>	array(),
+	'strong'	=>	array(),
+	'img'		=>	array()
+);
 
 if ( !class_exists( "WPMUDev_Friends" ) ) {
 	class WPMUDev_Friends {
@@ -67,12 +81,17 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			$this->_settings['options_key'] 			= "friends-plugin-options";					
 			$this->_settings['plugins']['messaging'] 	= false;
 			
-			$this->_admin_header_error 						= "";		
-			$this->_admin_header_warning 					= "";
+			$this->_admin_header_error 					= "";		
+			$this->_admin_header_warning 				= "";
 			
 			/* Setup the tetdomain for i18n language handling see http://codex.wordpress.org/Function_Reference/load_plugin_textdomain */
-	        load_plugin_textdomain( WPMUDEV_FRIENDS_I18N_DOMAIN, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	        
 
+			if (preg_match('/mu\-plugin/', PLUGINDIR) > 0) {
+				load_muplugin_textdomain( WPMUDEV_FRIENDS_I18N_DOMAIN, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+			} else {
+				load_plugin_textdomain( WPMUDEV_FRIENDS_I18N_DOMAIN, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+			}
 
 			register_activation_hook( __FILE__, 	array(&$this, 'friends_global_install' ) );
 			add_action( 'admin_notices', 			array(&$this, 'friends_admin_notices') );			
@@ -129,7 +148,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		 */
 		function friends_admin_init() {
 			
-			if (is_plugin_active_for_network('messaging/messaging.php')) {
+			if ((is_plugin_active_for_network('messaging/messaging.php')) || (is_plugin_active('messaging/messaging.php'))) {
 				$this->_settings['plugins']['messaging'] = true;
 			}
 		}
@@ -185,12 +204,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 					return false;
 
 			if (isset($_POST['message_email_notification'])) {
-				if (esc_attr($_POST['message_email_notification']) == "no")
+				if (sanitize_text_field($_POST['message_email_notification']) == "no")
 					update_user_meta( $user_id, 'friend_email_notification', 'no' );
 				else
 					update_user_meta( $user_id, 'friend_email_notification', 'yes' );
 			}
-			
 		}
 		
 	
@@ -206,8 +224,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_admin_notices() {
 
 			// IF set during the processing logic setsp for add, edit, restore
-			if ( (isset($_REQUEST['updatedmsg'])) && (isset($this->_messages[$_REQUEST['updatedmsg']])) ) {
-				?><div id='friends-warning' class='updated fade'><p><?php echo $this->_messages[$_REQUEST['updatedmsg']]; ?></p></div><?php
+			if (isset($_REQUEST['updatedmsg'])) {
+				$updatedmsg_key = sanitize_text_field($_REQUEST['updatedmsg']);
+				if (isset($this->_messages[$updatedmsg_key])) {
+					?><div id='friends-warning' class='updated fade'><p><?php echo $this->_messages[$updatedmsg_key]; ?></p></div><?php
+				}
 			}
 
 			// IF we set an error display in red box
@@ -232,9 +253,6 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_admin_menu() {
 			global $wpdb, $user_ID;
 
-			if (!is_multisite())
-				return;
-				
 			if (!is_network_admin()) {
 
 				$count_output = '';
@@ -266,11 +284,24 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 								'friend-requests', 
 								array(&$this, 'friends_requests_output')
 				);
-						
+				
 				add_action('load-'. $this->_pagehooks['friends'], 			array(&$this, 'friends_on_load_panels'));
 				add_action('load-'. $this->_pagehooks['find-friends'], 		array(&$this, 'friends_on_load_panels'));
 				add_action('load-'. $this->_pagehooks['friend-requests'], 	array(&$this, 'friends_on_load_panels'));
-
+				
+				
+				if (!is_multisite()) {
+				    $this->_pagehooks['friends-settings'] = add_submenu_page( 'friends', 
+									__( 'Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+									__( 'Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+									'manage_options', 
+									'friend-settings', 
+									array(&$this, 'friends_settings_output')
+					);
+					add_action('load-'. $this->_pagehooks['friends-settings'], 	array(&$this, 'friends_on_load_settings_panel'));
+					
+				}
+				
 			} else {
 			    $this->_pagehooks['friends-settings'] = add_menu_page( 	
 								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
@@ -298,8 +329,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			if ( ! current_user_can( 'read' ) )
 				wp_die( __( 'Cheatin&#8217; uh?' ) );
 
-			if (!is_multisite())
-				return;
+			//if (!is_multisite())
+			//	return;
 
 			$this->load_config();
 			$this->friends_process_actions();
@@ -334,11 +365,13 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			
 			$this->friends_on_load_panels();
 			
+			$this->_messages['settings-saved'] 			= __( "Settings saved", WPMUDEV_FRIENDS_I18N_DOMAIN );
+			
 			wp_enqueue_script('common');
 			wp_enqueue_script('wp-lists');
 			wp_enqueue_script('postbox');
 			
-			if (is_network_admin()) {
+			if (((is_multisite()) && (is_network_admin())) || (!is_multisite())) {
 				add_meta_box('friends-display-panel-email-request', 
 					__('Email Request Template', WPMUDEV_FRIENDS_I18N_DOMAIN), 
 					array(&$this, 'friends_metabox_show_email_request'), 
@@ -381,23 +414,21 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 		function friends_process_actions() {
 
-			global $wpdb, $user_ID;
+			global $wpdb, $user_ID, $FRIENDS_ALLOWED_CONTENT_TAGS;
 			
 			if (isset($_REQUEST['action'])) {			
 
-				switch($_REQUEST['action']) {
+				switch(sanitize_text_field($_REQUEST['action'])) {
 
 					case "add":
-						$tmp_friend_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" 
-							. $_GET['id'] . "' AND user_ID = '" . $user_ID . "'");
+						$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '%d' AND user_ID = '%d'", $_GET['id'], $user_ID));
 							
-						if ( $user_ID != $_GET['id'] || $tmp_friend_count < 1 ) {
-							$this->friends_add($user_ID, $_GET['id'], '0');
-							$this->friends_add_notification($_GET['id'], $user_ID);
+						if ( $user_ID != intval($_GET['id']) || $tmp_friend_count < 1 ) {
+							$this->friends_add($user_ID, intval($_GET['id']), '0');
+							$this->friends_add_notification(intval($_GET['id']), $user_ID);
 						}
 						
-						$location = remove_query_arg('action');
-						$location = remove_query_arg('id', $location);
+						$location = remove_query_arg(array('action', 'id'));
 						$location = add_query_arg('updatedmsg', 'success-add', $location);
 						if ($location) {
 							wp_redirect($location);
@@ -407,21 +438,23 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 					break;
 
 					case "process":
-
+//echo "_POST<pre>"; print_r($_POST); echo "</pre>";
+//die();
 						if ((isset($_POST['friends_add_request_notification_subject'])) 
 						 && (isset($_POST['friends_add_request_notification_content']))) {
 
-							if ((isset($_POST['reset'])) && ($_POST['reset'] == "Reset")) {
+							if ((isset($_POST['reset'])) && (sanitize_text_field($_POST['reset']) == "Reset")) {
 
 								unset($this->_config_data['templates']['friends_add_request_notification_subject']);
 								unset($this->_config_data['templates']['friends_add_request_notification_content']);
 
 							} else {
+
 								$this->_config_data['templates']['friends_add_request_notification_subject'] =
-								 	esc_attr($_POST['friends_add_request_notification_subject']);
+								 	sanitize_text_field($_POST['friends_add_request_notification_subject']);
 
 								$this->_config_data['templates']['friends_add_request_notification_content'] =
-								 	esc_attr($_POST['friends_add_request_notification_content']);
+								 	wp_kses($_POST['friends_add_request_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS);
 							}
 						}
 						
@@ -429,17 +462,17 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						if ((isset($_POST['friends_request_approval_notification_subject']))
 						 && (isset($_POST['friends_request_approval_notification_content']))) {
 
-							if ((isset($_POST['reset'])) && ($_POST['reset'] == "Reset")) {
+							if ((isset($_POST['reset'])) && (sanitize_text_field($_POST['reset']) == "Reset")) {
 
 								unset($this->_config_data['templates']['friends_request_approval_notification_subject']);
 								unset($this->_config_data['templates']['friends_request_approval_notification_content']);
 
 							} else {
 								$this->_config_data['templates']['friends_request_approval_notification_subject'] =
-								 	esc_attr($_POST['friends_request_approval_notification_subject']);
+								 	sanitize_text_field($_POST['friends_request_approval_notification_subject']);
 
 								$this->_config_data['templates']['friends_request_approval_notification_content'] =
-								 	esc_attr($_POST['friends_request_approval_notification_content']);
+								 	wp_kses($_POST['friends_request_approval_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS);
 							}
 						}
 
@@ -447,17 +480,17 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						if ((isset($_POST['friends_request_rejection_notification_subject']))
 						 && (isset($_POST['friends_request_rejection_notification_content']))) {
 
-							if ((isset($_POST['reset'])) && ($_POST['reset'] == "Reset")) {
+							if ((isset($_POST['reset'])) && (sanitize_text_field($_POST['reset']) == "Reset")) {
 
 								unset($this->_config_data['templates']['friends_request_rejection_notification_subject']);
 								unset($this->_config_data['templates']['friends_request_rejection_notification_content']);
 
 							} else {
 								$this->_config_data['templates']['friends_request_rejection_notification_subject'] =
-								 	esc_attr($_POST['friends_request_rejection_notification_subject']);
+								 	sanitize_text_field($_POST['friends_request_rejection_notification_subject']);
 
 								$this->_config_data['templates']['friends_request_rejection_notification_content'] =
-								 	esc_attr($_POST['friends_request_rejection_notification_content']);
+								 	wp_kses($_POST['friends_request_rejection_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS);
 							}
 						}
 
@@ -473,23 +506,21 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 
 					case "remove":
-						$query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='" 
-							.  $_GET['fid'] . "' AND user_ID = '" . $user_ID . "'";
+						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='%d' AND user_ID = '%d'", $_GET['fid'], $user_ID);
 						$delete_friend = $wpdb->get_row( $query, ARRAY_A );
 
 						//get second friend_ID
-						$tmp_friend_ID = $wpdb->get_var("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" . 
-							$delete_friend['friend_user_ID'] . "' AND  friend_user_ID = '" . $delete_friend['user_ID'] . "'");
+						$tmp_friend_ID = $wpdb->get_var($wpdb->prepare("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND  friend_user_ID = '%d'", $delete_friend['friend_user_ID'], $delete_friend['user_ID']));
 
 						//delete from second friend
 						if ( $tmp_friend_ID )
-							$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $tmp_friend_ID . "'" );
+							$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d'", $tmp_friend_ID ));
 
 						//delete from us
-						$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] 
-							. "' AND user_ID = '" . $user_ID . "'" );
+						$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d' AND user_ID = '%d'",  $_GET['fid'], $user_ID));
 
-						$location = add_query_arg('updatedmsg', 'success-remove');
+						$location = remove_query_arg(array('action', 'fid'));
+						$location = add_query_arg('updatedmsg', 'success-remove', $location);
 						if ($location) {
 							wp_redirect($location);
 							die();
@@ -497,29 +528,50 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						break;
 
 					case "approve":
-						$tmp_requesting_user_id = $wpdb->get_var("SELECT user_ID FROM " . $wpdb->base_prefix 
-							. "friends WHERE friend_ID = '" . $_GET['fid'] . "'");
+						$tmp_requesting_user_id = $wpdb->get_var($wpdb->prepare("SELECT user_ID FROM " . $wpdb->base_prefix 
+							. "friends WHERE friend_ID = '%d'", $_GET['fid']));
 
 						if ($tmp_requesting_user_id > 0) {
-							$wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" 
-								. $_GET['fid'] . "' AND friend_user_ID = '" . $user_ID . "'" );
+							//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" 
+							//	. $_GET['fid'] . "' AND friend_user_ID = '" . $user_ID . "'" );
+							$wpdb->update($wpdb->base_prefix . "friends", 
+								array(
+									'friend_approved' 	=> '1'
+								),
+								array(
+									'friend_ID'			=>	$_GET['fid'],
+									'friend_user_ID'	=>	$user_ID
+								), array('%d'), array('%d', '%d')
+							);
 
-
-							$query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID ='" . $user_ID . "' AND friend_user_ID = '" 
-								. $tmp_requesting_user_id . "' AND friend_approved = '0'";
+							$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID ='" . $user_ID . "' AND friend_user_ID = '%d' AND friend_approved = '%d'", $tmp_requesting_user_id, '0');
 							$tmp_friend = $wpdb->get_row( $query, ARRAY_A );
 
 							if ( is_array( $tmp_friend ) ) {
-								$wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" 
-									. $tmp_friend['friend_ID'] . "'" );
+								//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" 
+								//	. $tmp_friend['friend_ID'] . "'" );
+								$wpdb->update($wpdb->base_prefix . "friends", 
+									array(
+										'friend_approved' 	=> '1'
+									),
+									array(
+										'friend_ID'			=>	$_GET['fid'],
+									), array('%d'), array('%d')
+								);
+								
 							} else {
-								$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "friends (user_ID, friend_user_ID, friend_approved) VALUES ( '" 
-									. $user_ID . "','" . $tmp_requesting_user_id . "','1' )" );
+								//$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "friends (user_ID, friend_user_ID, friend_approved) VALUES ( '" 
+								//	. $user_ID . "','" . $tmp_requesting_user_id . "','1' )" );
+								$wpdb->insert($wpdb->base_prefix . "friends", array(
+									'user_ID'			=>	$user_ID, 
+									'friend_user_ID'	=>	$tmp_requesting_user_id, 
+									'friend_approved'	=>	'1'),
+									array('%d', '%d', '%d')
+								);
 							}
 							$this->friends_request_approval_notification( $tmp_requesting_user_id, $user_ID );							
 
-							$location = remove_query_arg('fid');
-							$location = remove_query_arg('action', $location);
+							$location = remove_query_arg(array('action', 'fid'));
 							$location = add_query_arg('updatedmsg', 'friend-approved', $location);
 							if ($location) {
 								wp_redirect($location);
@@ -529,31 +581,28 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						break;
 
 					case "reject":
-						$tmp_requesting_user_id = $wpdb->get_var("SELECT user_ID FROM " . $wpdb->base_prefix 
-							. "friends WHERE friend_ID = '" . $_GET['fid'] . "'");
+						$tmp_requesting_user_id = $wpdb->get_var($wpdb->prepare("SELECT user_ID FROM " . $wpdb->base_prefix 
+							. "friends WHERE friend_ID = '%d'", $_GET['fid']));
 						if ($tmp_requesting_user_id) {
 
 							$this->friends_request_rejection_notification($tmp_requesting_user_id, $user_ID);
 
 							//get all data of second friend
-							$query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='" .  $_GET['fid'] 
-								. "' AND friend_user_ID = '" . $user_ID . "'";
+							$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='%d' AND friend_user_ID = '%d'", $_GET['fid'], $user_ID);
 							$reject_friend = $wpdb->get_row( $query, ARRAY_A );
 
 							//get us friend_ID
-							$tmp_friend_ID = $wpdb->get_var("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" 
-								. $reject_friend['friend_user_ID'] . "' AND  friend_user_ID = '" . $reject_friend['user_ID'] . "'");
+							$tmp_friend_ID = $wpdb->get_var($wpdb->prepare("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND  friend_user_ID = '%d'", $reject_friend['friend_user_ID'], $reject_friend['user_ID']));
 
 							//delete from second friend
 							if ( $tmp_friend_ID )
-								$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $tmp_friend_ID . "'" );
+								$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d'", $tmp_friend_ID));
 
 							//delete from us
-							$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '" . $_GET['fid'] . "' AND friend_user_ID = '" 
-								. $user_ID . "'" );
+							$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d' AND friend_user_ID = '%d'", $_GET['fid'], $user_ID));
 
-
-							$location = add_query_arg('updatedmsg', 'friend-rejected');
+							$location = remove_query_arg(array('action', 'fid'));
+							$location = add_query_arg('updatedmsg', 'friend-rejected', $location);
 							if ($location) {
 								wp_redirect($location);
 								die();
@@ -561,6 +610,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						}
 						break;
 
+/*
 					case 'send_message':
 						if ((isset($_POST['message_to'])) && (strlen($_POST['message_to']))) {
 							//echo "_REQUEST<pre>"; print_r($_REQUEST); echo "</pre>";
@@ -572,7 +622,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							__('For better messaging install the', WPMUDEV_FRIENDS_I18N_DOMAIN) . ' <a href="http://premium.wpmudev.org/project/messaging">WPMU Dev Messaging plugin</a>';
 						}
 						break;
-					
+*/					
 					default:
 						break;
 				}
@@ -603,11 +653,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			$screen_help_text['friends-help-friends'] = '<p>'. __('The Friends listing page will show all user your have connections with. From the listing you can send messages to users. Also you can remove users who may have become unfriendly.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __("<strong>Friend</strong> - This is the user's display name.", WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __("<strong>Avatar</strong> - The user's avatar", WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __( '<strong>Send Message</strong> - Once you are connected to other friends you can send them messages.', WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p><p>' . __("<strong>View Blog</strong> - View the user's blog", WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __( '<strong>Remove</strong> - Allows you to remove the user as a friend.', WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p>';
 
 
-			$screen_help_text['friend-help-find'] = '<p>' . __( 'Using the search on this page you can search for other users within this Multisite system. You can locate other user by searching for Name, Login or Email. Click the Search button and all matching users will be listed. Beside each user will be an Add link which will create a request to the user. The user will need to accept the request to complete the friend connection. Within the list if you see Pending instead of Add this means the friend request has already been sent to this user.', SNAPSHOT_I18N_DOMAIN ) .'</p>';
+			$screen_help_text['friend-help-find'] = '<p>' . __( 'Using the search on this page you can search for other users within this Multisite system. You can locate other user by searching for Name, Login or Email. Click the Search button and all matching users will be listed. Beside each user will be an Add link which will create a request to the user. The user will need to accept the request to complete the friend connection. Within the list if you see Pending instead of Add this means the friend request has already been sent to this user.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p>';
 
-			$screen_help_text['friend-help-request'] = '<p>' . __( 'When another user requests you to be their friend they will be listed on this page. To complete the friend connection you must approve the request. You may also opt to reject the request.', SNAPSHOT_I18N_DOMAIN ) .'</p>';
+			$screen_help_text['friend-help-request'] = '<p>' . __( 'When another user requests you to be their friend they will be listed on this page. To complete the friend connection you must approve the request. You may also opt to reject the request.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p>';
 
-			$screen_help_text['friend-help-settings'] = '<p>' . __( 'This page contains various metaboxes to let you control the email templates used during the friend connection processing.', SNAPSHOT_I18N_DOMAIN ) .'</p><p>' . __("<strong>Email Request Template</strong> - This template contains the Subject and Content used when one user requests to be friend's with another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p><p>' . __("<strong>Email Approval Template</strong> - This template contains the Subject and Content used when one user approves a friend request from another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . "</p><p>" . __("<strong>Email Rejection Template</strong> - This template contains the Subject and Content used when one user rejects a friend request from another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . "</p>";
+			$screen_help_text['friend-help-settings'] = '<p>' . __( 'This page contains various metaboxes to let you control the email templates used during the friend connection processing.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __("<strong>Email Request Template</strong> - This template contains the Subject and Content used when one user requests to be friend's with another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p><p>' . __("<strong>Email Approval Template</strong> - This template contains the Subject and Content used when one user approves a friend request from another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . "</p><p>" . __("<strong>Email Rejection Template</strong> - This template contains the Subject and Content used when one user rejects a friend request from another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . "</p>";
 
 			if ( version_compare( $wp_version, '3.3.0', '>' ) ) {
 
@@ -618,7 +668,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		    		) 
 				);		
 
-				if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "friends")) {
+				if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "friends")) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-friends',
@@ -627,7 +677,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				    	) 
 					);
 				}
-				else if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "find-friends")) {
+				else if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "find-friends")) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-find',
@@ -635,7 +685,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						'content'	=> $screen_help_text['friend-help-find']
 					    ) 
 					);
-				} else if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "friend-requests")) {
+				} else if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "friend-requests")) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-requests',
@@ -643,7 +693,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						'content'	=> $screen_help_text['friend-help-request']
 					    ) 
 					);
-				} else if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "friend-settings")) {
+				} else if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "friend-settings")) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-settings',
@@ -657,19 +707,19 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				
 			} else {
 
-				if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "friends")) {
+				if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "friends")) {
 
 					add_contextual_help($screen, $screen_help_text['friends-help-overview']);
 				}
-				else if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "friends")) {
+				else if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "friends")) {
 
 					add_contextual_help($screen, $screen_help_text['friends-help-overview'] . $screen_help_text['friends-help-friends']);
 
-				} else if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "find-friends")) {
+				} else if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "find-friends")) {
 
 					add_contextual_help($screen, $screen_help_text['friends-help-overview'] . $screen_help_text['friend-help-find']);
 
-				} else if ((isset($_REQUEST['page'])) && ($_REQUEST['page'] == "friend-requests")) {
+				} else if ((isset($_REQUEST['page'])) && (sanitize_text_field($_REQUEST['page']) == "friend-requests")) {
 
 					add_contextual_help($screen, $screen_help_text['friends-help-overview'] . $screen_help_text['friend-requests']);	
 				} 
@@ -677,79 +727,6 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			}
 		}
 		
-		/**
-		 * Send quick message from the messaging plugin
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param none
-		 * @return none
-		 */
-		function send_quick_message() {
-		    if ( isset( $_POST['quick_message'] ) ) {
-
-		        $url =  get_option( 'siteurl' ) . "/wp-admin/admin.php?page=messaging_new&action=process";
-
-		        //foreach ( $_COOKIE as $key => $value ) {
-		        //    if ( ! ( empty( $key ) || empty($value ) || 'PHPSESSID' == $key ) )
-		        //        $cookies_header .= $key . '=' .  urlencode( $value ) . '; ';
-		        //}
-		        //$cookies_header = substr( $cookies_header, 0, -2 );
-
-		        $data = array(
-		            'message_to'        => $_POST['message_to'],
-		            'message_subject'   => $_POST['message_subject'],
-		            'message_content'   => $_POST['message_content']
-		         );
-
-		        $args =  array(
-		            'method'    => 'POST',
-		            'timeout'   => 30,
-		            'body'      => $data,
-		            'headers'   => array( 'cookie' => $cookies_header )
-		        );
-
-				echo "url=[". $url ."]<br />";
-				echo "args<pre>"; print_r($args); echo "</pre>";
-				//exit;
-
-		        $response = wp_remote_post( $url, $args );
-				echo "response<pre>"; print_r($response); echo "</pre>";
-				exit;
-				
-		//        $ch = curl_init();
-		//        curl_setopt($ch, CURLOPT_URL, $url);
-		//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-		//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		//        curl_setopt($ch, CURLOPT_COOKIE, $cookies_header);
-		//        curl_setopt($ch, CURLOPT_POST, TRUE);
-		//        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		//        $response = curl_exec($ch);
-
-		        if( is_wp_error( $response ) ) {
-		            //some problems
-					$location = remove_query_arg('action');
-					$location = remove_query_arg('fid', $location);
-		            $location = add_query_arg('updatedmsg', 'message-send-fail', $location);
-					if ($location) {
-						wp_redirect($location);
-						die();
-					}
-					
-		
-		        } else {
-					$location = remove_query_arg('action');
-					$location = remove_query_arg('fid', $location);
-		            $location = add_query_arg('updatedmsg', 'message-send-success', $location);
-					if ($location) {
-						wp_redirect($location);
-						die();
-					}
-
-		        }
-		        die;
-		    }
-		}
 		
 		
 		/**
@@ -765,8 +742,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 			$title = __( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN );
 
-		    $tmp_friends_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
-				. "friends WHERE user_ID = '" . $user_ID . "' AND friend_approved = '1'");
+		    $tmp_friends_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
+				. "friends WHERE user_ID = '%d' AND friend_approved = '%d'", $user_ID, '1'));
 
 		    if ( $tmp_friends_count > 0 )
 		        $title .= ' (' . $tmp_friends_count . ')';
@@ -779,14 +756,14 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_list_output() {
 			global $wpdb, $wp_roles, $current_user, $user_ID, $messaging_current_version;
 			
-			if ((isset($_GET['action'])) && ($_GET['action'] == "send_message")) {
-				$this->friends_send_message();
-			} else {
+//			if ((isset($_GET['action'])) && ($_GET['action'] == "send_message")) {
+//				$this->friends_send_message();
+//			} else {
 				?>
 				<div class="wrap friends-wrap">
 					<h2><?php _e('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></h2>
 					<?php					
-						if( isset( $_GET[ 'start' ] ) == false ) {
+						if ( !isset( $_GET[ 'start' ] )) {
 							$start = 0;
 						} else {
 							$start = intval( $_GET[ 'start' ] );
@@ -798,8 +775,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							$num = intval( $_GET[ 'num' ] );
 						}
 
-						$query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" . $user_ID . "' AND friend_approved = '1'";
-						$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND friend_approved = '%d' LIMIT %d,%d", $user_ID, '1', $start, $num);
 						$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
 						if( count( $tmp_friends ) < $num ) {
 							$next = false;
@@ -807,8 +783,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							$next = true;
 						}
 						if (count($tmp_friends) > 0) {
-							$tmp_friend_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" 
-								. $user_ID . "' AND friend_approved = '1'");
+							$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND friend_approved = '%d'", $user_ID, '1'));
 							
 							if ($tmp_friend_count > $num) {
 								?><table><tr><td><?php
@@ -854,10 +829,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 								foreach ($tmp_friends as $tmp_friend) {
 									$class = ( isset( $class ) ) ? NULL : 'alternate';
 	                        		echo "<tr class='" . $class . "'>";
-	                        		$tmp_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->base_prefix 
-										. "users WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
-	                        		$tmp_user_login = $wpdb->get_var("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '" 
-										. $tmp_friend['friend_user_ID'] . "'");
+	                        		$tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix 
+										. "users WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
+	                        		$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
 
 	                        		if ($tmp_display_name != $tmp_user_login) {
 	                            		echo "<td valign='top'><strong>" . $tmp_display_name . " (" . $tmp_user_login . ")</strong></td>";
@@ -867,9 +841,13 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	                        		echo "<td valign='top'>" . get_avatar($tmp_friend['friend_user_ID'],'32','') . "</td>";
 
 	                        		$tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog', true);
-	                        		$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
-	                        		$tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" 
-										. $tmp_blog_ID . "'");
+									if (is_multisite())
+	                        			$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
+									else
+										$tmp_blog_url = get_option('siteurl');
+										
+	                        		//$tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" 
+									//	. $tmp_blog_ID . "'");
 									if ($this->_settings['plugins']['messaging'] == true) {
 
                             			echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" 
@@ -890,11 +868,16 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	                        		echo "</tr>";
 								}
 							?></tbody></table><?php
+							if ($this->_settings['plugins']['messaging'] != true) {
+								echo "<p>" . __(sprintf('Install the %s plugin to allow sending messages to friends', 
+									'<a target="_blank" href="http://premium.wpmudev.org/project/messaging">WPMU Dev Messaging </a>'), WPMUDEV_FRIENDS_I18N_DOMAIN) ."</p>";
+								
+							}
 						} else {
 							?><p><?php _e('Your friends list is currently empty', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></p><?php
 					}
 				?></div><?php
-			}
+//			}
 		}
 
 		/**
@@ -912,9 +895,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			?>
 			<div class="wrap friends-wrap">
 			<?php
-				if (isset($_GET['fid'])) {
-					$tmp_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $_GET['fid'] . "'");
-					$tmp_user_login = $wpdb->get_var("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $_GET['fid'] . "'");
+				if ((isset($_GET['fid'])) && (intval($_GET['fid']))) {
+					$tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $_GET['fid']));
+					$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $_GET['fid']));
 					if ($tmp_display_name != $tmp_user_login){
 						$tmp_display_name = $tmp_display_name . ' (' . $tmp_user_login . ')';
 					}
@@ -959,7 +942,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						<label for="post-search-input"><?php _e("Search by friends display name, username or email address", 
 							WPMUDEV_FRIENDS_I18N_DOMAIN) ?></label><br />
 	                    <input id="post-search-input" name="search_terms" value="<?php 
-							if (isset($_GET['search_terms'])) { echo esc_attr($_GET['search_terms']); } ?>" type="text"  /><br />
+							if (isset($_GET['search_terms'])) { echo sanitize_text_field($_GET['search_terms']); } ?>" type="text"  /><br />
 
 						<input type="checkbox" id="search_show_friends" name="search_show_friends" <?php if (isset($_GET['search_show_friends'])) { echo ' checked="checked" '; } ?> />&nbsp;<label for="search_show_friends"><?php _e('Show existing friends', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></label><br />
 							
@@ -967,17 +950,16 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	                </p>
 				</form>
 				<?php
-					//echo "_GET<pre>"; print_r($_GET); echo "</pre>";
 					
-					$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? esc_attr($_GET['search_terms']) : NULL;
+					$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? sanitize_text_field($_GET['search_terms']) : '';
 					if ($tmp_search_terms != '') {
-						$query = "SELECT ID, display_name, user_login, user_email FROM " . $wpdb->base_prefix . "users
-							WHERE (user_login LIKE '%" . $tmp_search_terms . "%'
-							OR user_nicename LIKE '%" . $tmp_search_terms . "%'
-							OR user_email LIKE '%" . $tmp_search_terms . "%'
-							OR display_name LIKE '%" . $tmp_search_terms . "%')
-							AND ID != '" . $user_ID . "'
-							ORDER BY user_nicename ASC LIMIT 50";
+						$query = $wpdb->prepare("SELECT ID, display_name, user_login, user_email FROM " . $wpdb->base_prefix . "users
+							WHERE (user_login LIKE '%%%s%%'
+							OR user_nicename LIKE '%%%s%%'
+							OR user_email LIKE '%%%s%%'
+							OR display_name LIKE '%%%s%%')
+							AND ID != '%d'
+							ORDER BY user_nicename ASC LIMIT 50", $tmp_search_terms, $tmp_search_terms, $tmp_search_terms, $tmp_search_terms, $user_ID);
 						//echo "query=[".$query."]<br />";
 						
 						$tmp_search_results = $wpdb->get_results( $query, ARRAY_A );
@@ -995,7 +977,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 								//$sql_str = "SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" 
 								//	. $tmp_search_result['ID'] . "' AND user_ID = '" . $user_ID . "' AND friend_approved = 0";
 								
-								$sql_str = "SELECT 
+								$sql_str = $wpdb->prepare("SELECT 
 									f_from.friend_ID f_friend_ID, 
 									f_from.user_ID f_user_ID, 
 									f_from.friend_user_ID f_friend_user_ID, 
@@ -1007,8 +989,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									FROM " . $wpdb->base_prefix . "friends as f_from
 									LEFT JOIN " . $wpdb->base_prefix . "friends as f_to 
 									ON f_to.friend_user_ID = f_from.user_ID 
-									AND f_to.friend_user_ID = ". $user_ID ." AND f_to.user_ID = ". $tmp_search_result['ID'] ."
-									WHERE f_from.user_ID = ". $user_ID ." AND f_from.friend_user_ID = ". $tmp_search_result['ID'];
+									AND f_to.friend_user_ID = %d AND f_to.user_ID = %d
+									WHERE f_from.user_ID = %d AND f_from.friend_user_ID = %d", $user_ID, $tmp_search_result['ID'], $user_ID, $tmp_search_result['ID']);
 								//echo "sql_str=[". $sql_str ."]<br />";	
 							
 								$tmp_friend_results = $wpdb->get_row($sql_str);
@@ -1093,7 +1075,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						$num = intval( $_GET[ 'num' ] );
 					}
 
-					$query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '" . $user_ID . "' AND friend_approved = '0'";
+					$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '%d' AND friend_approved = '%d'", $user_ID, '0');
 					$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
 					//echo "query=[". $query ."]<br />";
 					$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
@@ -1106,7 +1088,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					if (count($tmp_friends) > 0) {
 
-						$tmp_friend_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" . $user_ID . "'");
+						$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d'", $user_ID));
 						if ($tmp_friend_count > 30) {
 							?><table><tr><td><?php
 
@@ -1161,10 +1143,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		                        $class = ( isset( $class ) ) ? NULL : 'alternate';
 		                        echo "<tr class='" . $class . "'>";
 		                        echo "<td valign='top'><strong>" . $tmp_friend['friend_ID'] . "</strong></td>";
-		                        $tmp_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = '" 
-									. $tmp_friend['user_ID'] . "'");
-		                        $tmp_user_login = $wpdb->get_var("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '" 
-									. $tmp_friend['user_ID'] . "'");
+		                        $tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $tmp_friend['user_ID']));
+		                        $tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $tmp_friend['user_ID']));
 
 		                        if ($tmp_display_name != $tmp_user_login) {
 		                            echo "<td valign='top'><strong>" . $tmp_display_name . " (" . $tmp_user_login . ")</strong></td>";
@@ -1174,9 +1154,13 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 		                        echo "<td valign='top'>" . get_avatar($tmp_friend['user_ID'],'32','') . "</td>";
 		                        $tmp_blog_ID = get_user_meta( $tmp_friend['user_ID'], 'primary_blog', true );
-		                        $tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
-		                        $tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" 
-									. $tmp_blog_ID . "'");
+								if (is_multisite())
+		                        	$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
+								else
+									$tmp_blog_url = get_option('siteurl');
+									
+		                        //$tmp_blog_path = $wpdb->get_var("SELECT path FROM " . $wpdb->base_prefix . "blogs WHERE blog_id = '" 
+								//	. $tmp_blog_ID . "'");
 
 		                        if ($tmp_blog_url != ''){
 		                            echo "<td valign='top'><a href='" . $tmp_blog_url . "' rel='permalink' class='edit'>" . __('View Blog',
@@ -1196,7 +1180,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						</tbody></table>
 						<?php
 					}else {
-						?><p><?php _e('No items in queue', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></p><?php
+						?><p><?php _e('No pending Friend requests', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></p><?php
 					}
 				?>
 			</div>
@@ -1458,7 +1442,14 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			$from_user_displayname 		= get_the_author_meta('display_name', 	$from_user_id);				
 			$from_user_email 			= get_the_author_meta('email', 			$from_user_id);
 			$from_user_blog_id 			= get_the_author_meta('primary_blog', 	$from_user_id);
-			$from_user_blog_info 		= get_blog_details($from_user_blog_id);
+
+			if (is_multisite()) {
+				$from_user_blog_info 		= get_blog_details($from_user_blog_id);
+			} else {
+				$from_user_blog_info = new stdClass;
+				$from_user_blog_info->blogname 	= get_option('blogname');
+				$from_user_blog_info->siteurl	= get_option('siteurl');
+			}
 
 			if ($from_user_username != $from_user_displayname) {
 				$from_user_displayname .= ' (' . $from_user_username . ')';					
@@ -1469,7 +1460,14 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			$to_user_displayname 		= get_the_author_meta('display_name', 	$to_user_id);
 			$to_user_email 				= get_the_author_meta('email', 			$to_user_id);
 			$to_user_blog_id 			= get_the_author_meta('primary_blog', 	$to_user_id);
-			$to_user_blog_info 			= get_blog_details($to_user_blog_id);
+
+			if (is_multisite()) {
+				$to_user_blog_info 			= get_blog_details($to_user_blog_id);
+			} else {
+				$to_user_blog_info = new stdClass;
+				$to_user_blog_info->blogname 	= get_option('blogname');
+				$to_user_blog_info->siteurl		= get_option('siteurl');				
+			}
 
 			if ($to_user_username != $to_user_displayname) {
 				$to_user_displayname .= ' (' . $to_user_username . ')';					
@@ -1504,13 +1502,19 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		
 		function friends_add( $tmp_uid, $tmp_friend_uid, $tmp_approved ) {
 			global $wpdb;
-			$tmp_friend_count =  $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
-				. "friends WHERE user_ID = '" . $tmp_uid . "' AND friend_user_ID = '" . $tmp_friend_uid . "'");
+			$tmp_friend_count =  $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
+				. "friends WHERE user_ID = '%d' AND friend_user_ID = '%d'", $tmp_uid, $tmp_friend_uid));
 			if ( $tmp_friend_count > 0 ) {
 				//let's not add this friend twice shall we
 			} else {
-				$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "friends (user_ID,friend_user_ID,friend_approved) VALUES ( '" . $tmp_uid . "','" 
-					. $tmp_friend_uid . "','" . $tmp_approved . "' )" );
+				//$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "friends (user_ID,friend_user_ID,friend_approved) VALUES ( '" . $tmp_uid . "','" 
+				//	. $tmp_friend_uid . "','" . $tmp_approved . "' )" );
+				$wpdb->insert($wpdb->base_prefix . 'friends', array(
+					'user_ID'			=>	$tmp_uid,
+					'friend_user_ID'	=>	$tmp_friend_uid,
+					'friend_approved'	=>	$tmp_approved
+					), array('%d', '%d', '%d')
+				);
 			}
 		}
 		
@@ -1532,8 +1536,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				$user_id = $user_ID;
 			}
 			
-			$friend_requests_count = $wpdb->get_var("SELECT COUNT(*) FROM " . 
-				$wpdb->base_prefix . "friends WHERE friend_user_ID = '" . $user_id . "' AND friend_approved = '0'");
+			$friend_requests_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . 
+				$wpdb->base_prefix . "friends WHERE friend_user_ID = '%s' AND friend_approved = '0'", $user_id));
 			if ($friend_requests_count)
 				return intval($friend_requests_count);
 		}
@@ -1549,7 +1553,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		
 		function load_config() {
 			
-			$this->_config_data = get_blog_option(1, $this->_settings['options_key']);
+			if (is_multisite())
+				$this->_config_data = get_blog_option(1, $this->_settings['options_key']);
+			else
+				$this->_config_data = get_option($this->_settings['options_key']);
+				
 			if (!isset($this->_config_data['templates']))
 				$this->_config_data['templates'] = array();
 
@@ -1628,8 +1636,12 @@ Thanks,
 		 */
 		function save_config() {
 
-			delete_blog_option(1, $this->_settings['options_key']);			
-			update_blog_option( 1, $this->_settings['options_key'], $this->_config_data);		
+			if (is_multisite()) {
+				delete_blog_option(1, $this->_settings['options_key']);			
+				update_blog_option( 1, $this->_settings['options_key'], $this->_config_data);		
+			} else {
+				update_option($this->_settings['options_key'], $this->_config_data);
+			}
 		}
 	}
 }
@@ -1645,8 +1657,8 @@ function widget_friends_init() {
 		global $wpdb, $user_ID;
 		$options = $newoptions = get_option('widget_friends');
 		if ( isset( $_POST['friends-submit'] ) ) {
-			$newoptions['friends-display'] = $_POST['friends-display'];
-			$newoptions['freinds-uid'] = $_POST['freinds-uid'];
+			$newoptions['friends-display'] = sanitize_text_field($_POST['friends-display']);
+			$newoptions['freinds-uid'] = intval($_POST['freinds-uid']);
 		}
 		if ( $options != $newoptions ) {
 			$options = $newoptions;
@@ -1660,8 +1672,7 @@ function widget_friends_init() {
 				. $wpdb->blogid . "_capabilities'");
 				
             if ($tmp_blog_users_count > 1) {
-                        $tmp_username = $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" .
- 							$tmp_sent_message['sent_message_from_user_ID'] . "'");
+                        $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_sent_message['sent_message_from_user_ID']));
                 ?>
                 <label for="freinds-uid" style="line-height:35px;display:block;"><?php _e('User', WPMUDEV_FRIENDS_I18N_DOMAIN); ?>:
                 <select name="freinds-uid" id="freinds-uid" style="width:65%;">
@@ -1670,7 +1681,7 @@ function widget_friends_init() {
                 $tmp_users = $wpdb->get_results( $query, ARRAY_A );
                 if (count($tmp_users) > 0){
                     foreach ($tmp_users as $tmp_user){
-                        $tmp_username = $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_user['user_id'] . "'");
+                        $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_user['user_id']));
                         ?>
                         <option value="<?php echo $tmp_user['user_id']; ?>" <?php 
 						if ($options['freinds-uid'] == $tmp_user['user_id']){ 
@@ -1722,7 +1733,7 @@ function widget_friends_init() {
             <br />
             <?php
 				//=================================================//
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '" . $options['freinds-uid'] . "' AND friend_approved = '1'";
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND friend_approved = '%d'", $options['freinds-uid'], '1');
 				$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
 				if ( count( $tmp_friends ) > 0 ) {
 					if ( $options['friends-display'] == 'list' ){
@@ -1730,10 +1741,14 @@ function widget_friends_init() {
 						foreach ( $tmp_friends as $tmp_friend ){
 							echo '<li>';
 							$tmp_blog_ID = get_user_meta( $tmp_friend['friend_user_ID'], 'primary_blog', true );
-							$tmp_blog_url = get_blog_option( $tmp_blog_ID, 'siteurl' );
-							$tmp_user_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
+							if (is_multisite())
+								$tmp_blog_url = get_blog_option( $tmp_blog_ID, 'siteurl' );
+							else
+								$tmp_blog_url = get_option( 'siteurl' );
+								
+							$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
 							if ($tmp_user_display_name == ''){
-								$tmp_user_display_name = $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
+								$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
 							}
 							if ($tmp_blog_url != ''){
 								echo '<a href="' . $tmp_blog_url . '">' . $tmp_user_display_name . '</a>';
@@ -1746,10 +1761,14 @@ function widget_friends_init() {
 					} else {
 						foreach ($tmp_friends as $tmp_friend){
 							$tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog', true);
-							$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
-							$tmp_user_display_name = $wpdb->get_var("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
+							if (is_multisite())
+								$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
+							else
+								$tmp_blog_url = get_option('siteurl');
+								
+							$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
 							if ($tmp_user_display_name == ''){
-								$tmp_user_display_name = $wpdb->get_var("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $tmp_friend['friend_user_ID'] . "'");
+								$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%s'", $tmp_friend['friend_user_ID']));
 							}
 
 							$friend_avatar = get_avatar($tmp_friend['friend_user_ID'], '32', '', $tmp_user_display_name);
@@ -1780,17 +1799,3 @@ function widget_friends_init() {
 
 }
 add_action('widgets_init', 'widget_friends_init');
-
-//------------------------------------------------------------------------//
-//---Support Functions----------------------------------------------------//
-//------------------------------------------------------------------------//
-
-/* Update Notifications Notice */
-if ( !function_exists( 'wdp_un_check' ) ):
-function wdp_un_check() {
-    if ( !class_exists('WPMUDEV_Update_Notifications') && current_user_can('edit_users') )
-        echo '<div class="error fade"><p>' . __('Please install the latest version of <a href="http://premium.wpmudev.org/project/update-notifications/" title="Download Now &raquo;">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href="http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/">More information &raquo;</a>', 'wpmudev') . '</a></p></div>';
-}
-add_action( 'admin_notices', 'wdp_un_check', 5 );
-add_action( 'network_admin_notices', 'wdp_un_check', 5 );
-endif;

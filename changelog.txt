@@ -3,6 +3,11 @@ Authors: Paul Menard (Incsub)
 
 == Changelog ==
 
+= 1.2.3 =
+* Security patch to filter all user input. 
+* Change to allow plugin to function on regular WordPress (not just Multisite).
+* Hooks for upcoming WordPress Chat 2.0 changes. 
+
 = 1.2.2 =
 * Corrected URL error on find friend page. Also, corrected find friend display to not show existing friends as pending. Finally, added option on find friends form to show all existing friends included with non-friends. Added some presentation styling to the find friends output. 
 
@@ -62,3 +67,5 @@ Authors: Paul Menard (Incsub)
 
 = 1.0.0 =
 * Initial Release
+
+63094-1353371105
