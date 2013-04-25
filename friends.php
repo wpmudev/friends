@@ -451,10 +451,10 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							} else {
 
 								$this->_config_data['templates']['friends_add_request_notification_subject'] =
-								 	sanitize_text_field($_POST['friends_add_request_notification_subject']);
+								 	stripslashes(sanitize_text_field($_POST['friends_add_request_notification_subject']));
 
 								$this->_config_data['templates']['friends_add_request_notification_content'] =
-								 	wp_kses($_POST['friends_add_request_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS);
+								 	stripslashes(wp_kses($_POST['friends_add_request_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS));
 							}
 						}
 						
@@ -469,10 +469,10 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 							} else {
 								$this->_config_data['templates']['friends_request_approval_notification_subject'] =
-								 	sanitize_text_field($_POST['friends_request_approval_notification_subject']);
+								 	stripslashes(sanitize_text_field($_POST['friends_request_approval_notification_subject']));
 
 								$this->_config_data['templates']['friends_request_approval_notification_content'] =
-								 	wp_kses($_POST['friends_request_approval_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS);
+								 	stripslashes(wp_kses($_POST['friends_request_approval_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS));
 							}
 						}
 
@@ -487,10 +487,10 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 							} else {
 								$this->_config_data['templates']['friends_request_rejection_notification_subject'] =
-								 	sanitize_text_field($_POST['friends_request_rejection_notification_subject']);
+								 	stripslashes(sanitize_text_field($_POST['friends_request_rejection_notification_subject']));
 
 								$this->_config_data['templates']['friends_request_rejection_notification_content'] =
-								 	wp_kses($_POST['friends_request_rejection_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS);
+								 	stripslashes(wp_kses($_POST['friends_request_rejection_notification_content'], $FRIENDS_ALLOWED_CONTENT_TAGS));
 							}
 						}
 
@@ -942,7 +942,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						<label for="post-search-input"><?php _e("Search by friends display name, username or email address", 
 							WPMUDEV_FRIENDS_I18N_DOMAIN) ?></label><br />
 	                    <input id="post-search-input" name="search_terms" value="<?php 
-							if (isset($_GET['search_terms'])) { echo sanitize_text_field($_GET['search_terms']); } ?>" type="text"  /><br />
+							if (isset($_GET['search_terms'])) { echo stripslashes(sanitize_text_field($_GET['search_terms'])); } ?>" type="text"  /><br />
 
 						<input type="checkbox" id="search_show_friends" name="search_show_friends" <?php if (isset($_GET['search_show_friends'])) { echo ' checked="checked" '; } ?> />&nbsp;<label for="search_show_friends"><?php _e('Show existing friends', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></label><br />
 							
@@ -951,7 +951,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				</form>
 				<?php
 					
-					$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? sanitize_text_field($_GET['search_terms']) : '';
+					$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? stripslashes(sanitize_text_field($_GET['search_terms'])) : '';
 					if ($tmp_search_terms != '') {
 						$query = $wpdb->prepare("SELECT ID, display_name, user_login, user_email FROM " . $wpdb->base_prefix . "users
 							WHERE (user_login LIKE '%%%s%%'
