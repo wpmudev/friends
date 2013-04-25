@@ -421,7 +421,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				switch(sanitize_text_field($_REQUEST['action'])) {
 
 					case "add":
-						$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '%d' AND user_ID = '%d'", $_GET['id'], $user_ID));
+						$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = %d AND user_ID = %d", $_GET['id'], $user_ID));
 							
 						if ( $user_ID != intval($_GET['id']) || $tmp_friend_count < 1 ) {
 							$this->friends_add($user_ID, intval($_GET['id']), '0');
@@ -506,18 +506,18 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 
 					case "remove":
-						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='%d' AND user_ID = '%d'", $_GET['fid'], $user_ID);
+						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='%d' AND user_ID = %d", $_GET['fid'], $user_ID);
 						$delete_friend = $wpdb->get_row( $query, ARRAY_A );
 
 						//get second friend_ID
-						$tmp_friend_ID = $wpdb->get_var($wpdb->prepare("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND  friend_user_ID = '%d'", $delete_friend['friend_user_ID'], $delete_friend['user_ID']));
+						$tmp_friend_ID = $wpdb->get_var($wpdb->prepare("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND  friend_user_ID = %d", $delete_friend['friend_user_ID'], $delete_friend['user_ID']));
 
 						//delete from second friend
 						if ( $tmp_friend_ID )
-							$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d'", $tmp_friend_ID ));
+							$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = %d", $tmp_friend_ID ));
 
 						//delete from us
-						$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d' AND user_ID = '%d'",  $_GET['fid'], $user_ID));
+						$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = %d AND user_ID = %d",  $_GET['fid'], $user_ID));
 
 						$location = remove_query_arg(array('action', 'fid'));
 						$location = add_query_arg('updatedmsg', 'success-remove', $location);
@@ -529,7 +529,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					case "approve":
 						$tmp_requesting_user_id = $wpdb->get_var($wpdb->prepare("SELECT user_ID FROM " . $wpdb->base_prefix 
-							. "friends WHERE friend_ID = '%d'", $_GET['fid']));
+							. "friends WHERE friend_ID = %d", $_GET['fid']));
 
 						if ($tmp_requesting_user_id > 0) {
 							//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "friends SET friend_approved = '1' WHERE friend_ID = '" 
@@ -544,7 +544,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 								), array('%d'), array('%d', '%d')
 							);
 
-							$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID ='" . $user_ID . "' AND friend_user_ID = '%d' AND friend_approved = '%d'", $tmp_requesting_user_id, '0');
+							$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID ='" . $user_ID . "' AND friend_user_ID = %d AND friend_approved = %d", $tmp_requesting_user_id, '0');
 							$tmp_friend = $wpdb->get_row( $query, ARRAY_A );
 
 							if ( is_array( $tmp_friend ) ) {
@@ -582,24 +582,24 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					case "reject":
 						$tmp_requesting_user_id = $wpdb->get_var($wpdb->prepare("SELECT user_ID FROM " . $wpdb->base_prefix 
-							. "friends WHERE friend_ID = '%d'", $_GET['fid']));
+							. "friends WHERE friend_ID = %d", $_GET['fid']));
 						if ($tmp_requesting_user_id) {
 
 							$this->friends_request_rejection_notification($tmp_requesting_user_id, $user_ID);
 
 							//get all data of second friend
-							$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID ='%d' AND friend_user_ID = '%d'", $_GET['fid'], $user_ID);
+							$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_ID =%d AND friend_user_ID = %d", $_GET['fid'], $user_ID);
 							$reject_friend = $wpdb->get_row( $query, ARRAY_A );
 
 							//get us friend_ID
-							$tmp_friend_ID = $wpdb->get_var($wpdb->prepare("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND  friend_user_ID = '%d'", $reject_friend['friend_user_ID'], $reject_friend['user_ID']));
+							$tmp_friend_ID = $wpdb->get_var($wpdb->prepare("SELECT friend_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_user_ID = %d", $reject_friend['friend_user_ID'], $reject_friend['user_ID']));
 
 							//delete from second friend
 							if ( $tmp_friend_ID )
-								$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d'", $tmp_friend_ID));
+								$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = %d", $tmp_friend_ID));
 
 							//delete from us
-							$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = '%d' AND friend_user_ID = '%d'", $_GET['fid'], $user_ID));
+							$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "friends WHERE friend_ID = %d AND friend_user_ID = %d", $_GET['fid'], $user_ID));
 
 							$location = remove_query_arg(array('action', 'fid'));
 							$location = add_query_arg('updatedmsg', 'friend-rejected', $location);
@@ -743,7 +743,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			$title = __( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN );
 
 		    $tmp_friends_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
-				. "friends WHERE user_ID = '%d' AND friend_approved = '%d'", $user_ID, '1'));
+				. "friends WHERE user_ID = %d AND friend_approved = %d", $user_ID, '1'));
 
 		    if ( $tmp_friends_count > 0 )
 		        $title .= ' (' . $tmp_friends_count . ')';
@@ -775,7 +775,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							$num = intval( $_GET[ 'num' ] );
 						}
 
-						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND friend_approved = '%d' LIMIT %d,%d", $user_ID, '1', $start, $num);
+						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d LIMIT %d,%d", $user_ID, '1', $start, $num);
 						$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
 						if( count( $tmp_friends ) < $num ) {
 							$next = false;
@@ -783,7 +783,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							$next = true;
 						}
 						if (count($tmp_friends) > 0) {
-							$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND friend_approved = '%d'", $user_ID, '1'));
+							$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d", $user_ID, '1'));
 							
 							if ($tmp_friend_count > $num) {
 								?><table><tr><td><?php
@@ -830,8 +830,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									$class = ( isset( $class ) ) ? NULL : 'alternate';
 	                        		echo "<tr class='" . $class . "'>";
 	                        		$tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix 
-										. "users WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
-	                        		$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
+										. "users WHERE ID = %d", $tmp_friend['friend_user_ID']));
+	                        		$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $tmp_friend['friend_user_ID']));
 
 	                        		if ($tmp_display_name != $tmp_user_login) {
 	                            		echo "<td valign='top'><strong>" . $tmp_display_name . " (" . $tmp_user_login . ")</strong></td>";
@@ -896,8 +896,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			<div class="wrap friends-wrap">
 			<?php
 				if ((isset($_GET['fid'])) && (intval($_GET['fid']))) {
-					$tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $_GET['fid']));
-					$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $_GET['fid']));
+					$tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $_GET['fid']));
+					$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $_GET['fid']));
 					if ($tmp_display_name != $tmp_user_login){
 						$tmp_display_name = $tmp_display_name . ' (' . $tmp_user_login . ')';
 					}
@@ -954,12 +954,16 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 					$tmp_search_terms = ( isset( $_GET['search_terms'] ) ) ? stripslashes(sanitize_text_field($_GET['search_terms'])) : '';
 					if ($tmp_search_terms != '') {
 						$query = $wpdb->prepare("SELECT ID, display_name, user_login, user_email FROM " . $wpdb->base_prefix . "users
-							WHERE (user_login LIKE '%%%s%%'
-							OR user_nicename LIKE '%%%s%%'
-							OR user_email LIKE '%%%s%%'
-							OR display_name LIKE '%%%s%%')
+							WHERE (user_login LIKE %s
+							OR user_nicename LIKE %s
+							OR user_email LIKE %s
+							OR display_name LIKE %s)
 							AND ID != '%d'
-							ORDER BY user_nicename ASC LIMIT 50", $tmp_search_terms, $tmp_search_terms, $tmp_search_terms, $tmp_search_terms, $user_ID);
+							ORDER BY user_nicename ASC LIMIT 50", 
+							"%%".$tmp_search_terms."%%", 
+							"%%".$tmp_search_terms."%%", 
+							"%%".$tmp_search_terms."%%", 
+							"%%".$tmp_search_terms."%%", $user_ID);
 						//echo "query=[".$query."]<br />";
 						
 						$tmp_search_results = $wpdb->get_results( $query, ARRAY_A );
@@ -990,7 +994,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									LEFT JOIN " . $wpdb->base_prefix . "friends as f_to 
 									ON f_to.friend_user_ID = f_from.user_ID 
 									AND f_to.friend_user_ID = %d AND f_to.user_ID = %d
-									WHERE f_from.user_ID = %d AND f_from.friend_user_ID = %d", $user_ID, $tmp_search_result['ID'], $user_ID, $tmp_search_result['ID']);
+									WHERE f_from.user_ID = %d AND f_from.friend_user_ID = %d", 
+									$user_ID, $tmp_search_result['ID'], $user_ID, $tmp_search_result['ID']);
 								//echo "sql_str=[". $sql_str ."]<br />";	
 							
 								$tmp_friend_results = $wpdb->get_row($sql_str);
@@ -1075,7 +1080,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						$num = intval( $_GET[ 'num' ] );
 					}
 
-					$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = '%d' AND friend_approved = '%d'", $user_ID, '0');
+					$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE friend_user_ID = %d AND friend_approved = %d", $user_ID, '0');
 					$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
 					//echo "query=[". $query ."]<br />";
 					$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
@@ -1088,7 +1093,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					if (count($tmp_friends) > 0) {
 
-						$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d'", $user_ID));
+						$tmp_friend_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d", $user_ID));
 						if ($tmp_friend_count > 30) {
 							?><table><tr><td><?php
 
@@ -1143,8 +1148,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		                        $class = ( isset( $class ) ) ? NULL : 'alternate';
 		                        echo "<tr class='" . $class . "'>";
 		                        echo "<td valign='top'><strong>" . $tmp_friend['friend_ID'] . "</strong></td>";
-		                        $tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $tmp_friend['user_ID']));
-		                        $tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $tmp_friend['user_ID']));
+		                        $tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $tmp_friend['user_ID']));
+		                        $tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $tmp_friend['user_ID']));
 
 		                        if ($tmp_display_name != $tmp_user_login) {
 		                            echo "<td valign='top'><strong>" . $tmp_display_name . " (" . $tmp_user_login . ")</strong></td>";
@@ -1503,7 +1508,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_add( $tmp_uid, $tmp_friend_uid, $tmp_approved ) {
 			global $wpdb;
 			$tmp_friend_count =  $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
-				. "friends WHERE user_ID = '%d' AND friend_user_ID = '%d'", $tmp_uid, $tmp_friend_uid));
+				. "friends WHERE user_ID = %d AND friend_user_ID = %d", $tmp_uid, $tmp_friend_uid));
 			if ( $tmp_friend_count > 0 ) {
 				//let's not add this friend twice shall we
 			} else {
@@ -1537,7 +1542,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			}
 			
 			$friend_requests_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . 
-				$wpdb->base_prefix . "friends WHERE friend_user_ID = '%s' AND friend_approved = '0'", $user_id));
+				$wpdb->base_prefix . "friends WHERE friend_user_ID = %s AND friend_approved = %d", $user_id, '0'));
 			if ($friend_requests_count)
 				return intval($friend_requests_count);
 		}
@@ -1672,7 +1677,7 @@ function widget_friends_init() {
 				. $wpdb->blogid . "_capabilities'");
 				
             if ($tmp_blog_users_count > 1) {
-                        $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_sent_message['sent_message_from_user_ID']));
+                        $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = %d", $tmp_sent_message['sent_message_from_user_ID']));
                 ?>
                 <label for="freinds-uid" style="line-height:35px;display:block;"><?php _e('User', WPMUDEV_FRIENDS_I18N_DOMAIN); ?>:
                 <select name="freinds-uid" id="freinds-uid" style="width:65%;">
@@ -1681,7 +1686,7 @@ function widget_friends_init() {
                 $tmp_users = $wpdb->get_results( $query, ARRAY_A );
                 if (count($tmp_users) > 0){
                     foreach ($tmp_users as $tmp_user){
-                        $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_user['user_id']));
+                        $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = %d", $tmp_user['user_id']));
                         ?>
                         <option value="<?php echo $tmp_user['user_id']; ?>" <?php 
 						if ($options['freinds-uid'] == $tmp_user['user_id']){ 
@@ -1733,7 +1738,7 @@ function widget_friends_init() {
             <br />
             <?php
 				//=================================================//
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = '%d' AND friend_approved = '%d'", $options['freinds-uid'], '1');
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d", $options['freinds-uid'], '1');
 				$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
 				if ( count( $tmp_friends ) > 0 ) {
 					if ( $options['friends-display'] == 'list' ){
@@ -1746,9 +1751,9 @@ function widget_friends_init() {
 							else
 								$tmp_blog_url = get_option( 'siteurl' );
 								
-							$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
+							$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->users . " WHERE ID = %d", $tmp_friend['friend_user_ID']));
 							if ($tmp_user_display_name == ''){
-								$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
+								$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = %d", $tmp_friend['friend_user_ID']));
 							}
 							if ($tmp_blog_url != ''){
 								echo '<a href="' . $tmp_blog_url . '">' . $tmp_user_display_name . '</a>';
@@ -1766,9 +1771,9 @@ function widget_friends_init() {
 							else
 								$tmp_blog_url = get_option('siteurl');
 								
-							$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->users . " WHERE ID = '%d'", $tmp_friend['friend_user_ID']));
+							$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->users . " WHERE ID = %d", $tmp_friend['friend_user_ID']));
 							if ($tmp_user_display_name == ''){
-								$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = '%s'", $tmp_friend['friend_user_ID']));
+								$tmp_user_display_name = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = %s", $tmp_friend['friend_user_ID']));
 							}
 
 							$friend_avatar = get_avatar($tmp_friend['friend_user_ID'], '32', '', $tmp_user_display_name);
