@@ -4,7 +4,7 @@ Authors: Paul Menard (Incsub)
 == Changelog ==
 
 = 1.2.3 =
-* Security patch to filter all user input. 
+* XSS prevention patches
 * Change to allow plugin to function on regular WordPress (not just Multisite).
 * Hooks for upcoming WordPress Chat 2.0 changes. 
 
