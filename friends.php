@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.2.3
+Version: 1.3
 Network: true
 WDP ID: 62
 Domain Path: languages
@@ -79,7 +79,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function __construct() {
 
 			$this->_settings['options_key'] 			= "friends-plugin-options";					
-			$this->_settings['plugins']['messaging'] 	= false;
+			$this->_settings['plugins'] 				= array();
 			
 			$this->_admin_header_error 					= "";		
 			$this->_admin_header_warning 				= "";
@@ -148,9 +148,25 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		 */
 		function friends_admin_init() {
 			
-			if ((is_plugin_active_for_network('messaging/messaging.php')) || (is_plugin_active('messaging/messaging.php'))) {
+			if ((is_plugin_active('messaging/messaging.php'))) {
 				$this->_settings['plugins']['messaging'] = true;
+			} else if ((is_multisite()) && (is_plugin_active_for_network('messaging/messaging.php'))) {
+				$this->_settings['plugins']['messaging'] = true;
+			} else {
+				$this->_settings['plugins']['messaging'] = false;
 			}
+
+			if ( (is_plugin_active('wordpress-chat/wordpress-chat.php')) || (is_plugin_active('wordpress-chat/wordpress-chat.php')) ) {
+				if (function_exists('wpmudev_chat_get_chat_status_label')) 
+					$this->_settings['plugins']['chat'] = true;
+			} else if ((is_multisite()) && (is_plugin_active_for_network('wordpress-chat/wordpress-chat.php'))) {
+				if (function_exists('wpmudev_chat_get_chat_status_label')) 
+					$this->_settings['plugins']['chat'] = true;
+			} else {
+				$this->_settings['plugins']['chat'] = false;
+			}
+			
+			//echo "_settings<pre>"; print_r($this->_settings); echo "</pre>";
 		}
 		
 		/**
@@ -776,7 +792,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						}
 
 						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d LIMIT %d,%d", $user_ID, '1', $start, $num);
-						$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
+						$tmp_friends = $wpdb->get_results( $query );
 						if( count( $tmp_friends ) < $num ) {
 							$next = false;
 						} else {
@@ -821,6 +837,10 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									if ($this->_settings['plugins']['messaging'] == true) {
 										?><th scope='col'></th><?php
 									}
+
+									if ($this->_settings['plugins']['chat'] == true) {
+										?><th scope='col'></th><?php
+									}
 								?>
 								<th scope='col'></th>
 							</tr></thead>
@@ -830,17 +850,17 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									$class = ( isset( $class ) ) ? NULL : 'alternate';
 	                        		echo "<tr class='" . $class . "'>";
 	                        		$tmp_display_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM " . $wpdb->base_prefix 
-										. "users WHERE ID = %d", $tmp_friend['friend_user_ID']));
-	                        		$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $tmp_friend['friend_user_ID']));
+										. "users WHERE ID = %d", $tmp_friend->friend_user_ID));
+	                        		$tmp_user_login = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->base_prefix . "users WHERE ID = %d", $tmp_friend->friend_user_ID));
 
 	                        		if ($tmp_display_name != $tmp_user_login) {
 	                            		echo "<td valign='top'><strong>" . $tmp_display_name . " (" . $tmp_user_login . ")</strong></td>";
 	                        		} else {
 	                            		echo "<td valign='top'><strong>" . $tmp_display_name . "</strong></td>";
 	                        		}
-	                        		echo "<td valign='top'>" . get_avatar($tmp_friend['friend_user_ID'],'32','') . "</td>";
+	                        		echo "<td valign='top'>" . get_avatar($tmp_friend->friend_user_ID,'32','') . "</td>";
 
-	                        		$tmp_blog_ID = get_user_meta($tmp_friend['friend_user_ID'], 'primary_blog', true);
+	                        		$tmp_blog_ID = get_user_meta($tmp_friend->friend_user_ID, 'primary_blog', true);
 									if (is_multisite())
 	                        			$tmp_blog_url = get_blog_option($tmp_blog_ID, 'siteurl');
 									else
@@ -855,6 +875,16 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 											. __('Send Message', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
 									} 
 
+									if ($this->_settings['plugins']['chat'] == true) {
+
+                        				echo "<td valign='top'>";
+										if ($tmp_friend->friend_approved == 1) {
+											echo wpmudev_chat_get_chat_status_label($user_ID, $tmp_friend->friend_user_ID);
+										}
+
+										echo "</td>";
+									}
+
 
 	                        		if ($tmp_blog_url != '') {
 	                            		echo "<td valign='top'><a href='" . $tmp_blog_url . "' rel='permalink' class='edit'>" 
@@ -863,7 +893,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	                            		echo "<td valign='top'><a class='edit' style='color:#999999;text-decoration:none;border:0px;'>" 
 											. __('View Blog', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
 	                        		}
-	                        		echo "<td valign='top'><a href='admin.php?page=friends&action=remove&fid=" . $tmp_friend['friend_ID'] 
+	                        		echo "<td valign='top'><a href='admin.php?page=friends&action=remove&fid=" . $tmp_friend->friend_ID
 										. "' rel='permalink' class='delete'>" . __('Remove', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
 	                        		echo "</tr>";
 								}
@@ -1523,6 +1553,58 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			}
 		}
 		
+		
+		/**
+		 * Utility function to determine is a user is friends with another user. 
+		 *
+		 * @since 1.2.3
+		 *
+		 * @param 
+		 * tmp_uid - int - Current user ID
+		 * tmp_friend_uid - int - Friend user ID
+		 * @return returns the value of 'friend_approved' field. 1 - Approved, 0 - Pending, null - no status
+		 */
+		function friends_check_status($tmp_uid, $tmp_friend_uid) {
+			global $wpdb;
+			
+			$sql = $wpdb->prepare("SELECT friend_approved FROM " . $wpdb->base_prefix 
+				. "friends WHERE user_ID = %d AND friend_user_ID = %d", $tmp_uid, $tmp_friend_uid);
+			//echo "sql=[". $sql ."]<br />";	
+			return $wpdb->get_var($sql);
+		}
+		
+		
+		/**
+		 * Utility function to get a list of friend user IDs
+		 *
+		 * @since 1.2.3
+		 *
+		 * @param 
+		 * tmp_uid - int - Current user ID
+		 * friend_status - int - Approved status of friends. Defaults to '1' for returning approved only. '0' for pending. 
+		 * @return returns array of user ids
+		 */
+		function friends_get_list($tmp_uid, $friend_status=1) {
+			global $wpdb;
+			
+			$friend_status = intval($friend_status);
+			if (($friend_status != 1) && ($friend_status != 0))
+				$friend_status = 1;
+				
+			if ( $friends_list = get_transient( 'wpmudev-friends-'. $tmp_uid .'-'. $friend_status ) ) {
+				return $friends_list;
+			}
+			
+			$query = $wpdb->prepare("SELECT friend_user_ID FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d", 
+				$tmp_uid, $friend_status);
+			//echo "query=[". $query ."]<br />";
+			$friends_list = $wpdb->get_col($query);
+			set_transient( 'wpmudev-friends-'. $tmp_uid .'-'. $friend_status, $friends_list, 60 );
+			
+			return $friends_list;
+		}
+		
+		
 		/**
 		 * Called from the admin menu processing to show the number of friend requests on our menu item
 		 *
@@ -1653,6 +1735,45 @@ Thanks,
 
 if (!isset($wpmudev_friends))
 	$wpmudev_friends = new WPMUDev_Friends();
+
+
+function friends_add($tmp_uid, $tmp_friend_uid, $tmp_approved) {
+	global $wpmudev_friends;
+	
+	return $wpmudev_friends->friends_add($tmp_uid, $tmp_friend_uid, $tmp_approved);
+}
+
+/**
+ * Interface function for friends class function. See class function for details.
+ *
+ * @since 1.2.3
+ *
+ */
+function friends_check_status($tmp_uid, $tmp_friend_uid) {
+	global $wpmudev_friends;
+
+	return $wpmudev_friends->friends_check_status($tmp_uid, $tmp_friend_uid);
+}
+
+/**
+ * Interface function for friends class function. See class function for details.
+ *
+ * @since 1.2.3
+ *
+ */
+function friends_get_list($tmp_uid, $friend_status=1) {
+	global $wpmudev_friends;
+
+	return $wpmudev_friends->friends_get_list($tmp_uid, $friend_status);
+	
+}
+
+
+function friends_add_notification( $to_uid, $from_uid ) {
+	global $wpmudev_friends;
+
+	return $wpmudev_friends->friends_add_notification( $to_uid, $from_uid );
+}
 
 function widget_friends_init() {
 	global $wpdb, $user_ID;

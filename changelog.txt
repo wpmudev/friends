@@ -3,6 +3,9 @@ Authors: Paul Menard (Incsub)
 
 == Changelog ==
 
+= 1.3 =
+* Added integration with Chat 2.0 to show Friends available for Chat within Friends listing.
+
 = 1.2.3 =
 * XSS prevention patches
 * Change to allow plugin to function on regular WordPress (not just Multisite).
