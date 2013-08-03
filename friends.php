@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.3
+Version: 1.3.1
 Network: true
 WDP ID: 62
 Domain Path: languages
@@ -269,7 +269,18 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_admin_menu() {
 			global $wpdb, $user_ID;
 
-			if (!is_network_admin()) {
+			// Are we viewing the Network 
+			if (is_network_admin()) {
+				$this->_pagehooks['friends-settings'] = add_menu_page( 	
+								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+								'manage_network_options', 
+								'friend-settings', 
+								array(&$this, 'friends_settings_output')
+				);
+				add_action('load-'. $this->_pagehooks['friends-settings'], 	array(&$this, 'friends_on_load_settings_panel'));							
+			    
+			} else {
 
 				$count_output = '';
 				$request_count = $this->friends_get_request_count();
@@ -277,7 +288,6 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 					$count_output = '&nbsp;<span class="update-plugins"><span class="updates-count count-' . $request_count . '">' 
 						. $request_count . '</span></span>';				
 				}
-
 
 			    $this->_pagehooks['friends'] = add_menu_page( 	__('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
 								__('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
@@ -296,7 +306,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			
 			    $this->_pagehooks['friend-requests'] = add_submenu_page( 'friends', 
 								__( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								__( 'Friend Requests', WPMUDEV_FRIENDS_I18N_DOMAIN ) . $count_output, 'read', 
+								__( 'Friend Requests', WPMUDEV_FRIENDS_I18N_DOMAIN ) . $count_output, 
+								'read', 
 								'friend-requests', 
 								array(&$this, 'friends_requests_output')
 				);
@@ -314,20 +325,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									'friend-settings', 
 									array(&$this, 'friends_settings_output')
 					);
-					add_action('load-'. $this->_pagehooks['friends-settings'], 	array(&$this, 'friends_on_load_settings_panel'));
-					
-				}
-				
-			} else {
-			    $this->_pagehooks['friends-settings'] = add_menu_page( 	
-								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								'read', 
-								'friend-settings', 
-								array(&$this, 'friends_settings_output')
-				);
-				add_action('load-'. $this->_pagehooks['friends-settings'], 	array(&$this, 'friends_on_load_settings_panel'));							
-			}
+					add_action('load-'. $this->_pagehooks['friends-settings'], 	array(&$this, 'friends_on_load_settings_panel'));					
+				}				
+			} 
 		}	
 		
 		/**
@@ -431,6 +431,16 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_process_actions() {
 
 			global $wpdb, $user_ID, $FRIENDS_ALLOWED_CONTENT_TAGS;
+			
+			// Check that user posting form have appropriate user capabilities
+			if (is_network_admin()) {
+				if ( ! current_user_can( 'manage_network_options' ) )
+					return;
+					
+			} else {
+				if ( ! current_user_can( 'read' ) )
+					return;				
+			}
 			
 			if (isset($_REQUEST['action'])) {			
 
