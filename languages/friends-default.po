@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: Friends 1.3.1.1\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
 "Last-Translator: Paul Menard <paul@codehooligans.com>\n"
@@ -10,343 +10,341 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: English\n"
 
-#: friends.php:150
+#: friends.php:187
 msgid "Friends Notifications"
 msgstr ""
 
-#: friends.php:154
+#: friends.php:191
 msgid "Email Notification"
 msgstr ""
 
-#: friends.php:161
+#: friends.php:198
 msgid "Yes"
 msgstr ""
 
-#: friends.php:164
+#: friends.php:201
 msgid "No"
 msgstr ""
 
-#: friends.php:166
+#: friends.php:203
 msgid "Receive an email when someone adds you as a friend"
 msgstr ""
 
-#. #-#-#-#-#  friends.pot (Friends 1.2.1)  #-#-#-#-#
-#. Plugin Name of the plugin/theme
-#: friends.php:248
-#: friends.php:249
-#: friends.php:256
-#: friends.php:264
-#: friends.php:623
-#: friends.php:758
-#: friends.php:779
-#: friends.php:1661
-#: friends.php:1717
-#: friends.php:1718
-msgid "Friends"
-msgstr ""
-
-#: friends.php:257
-#: friends.php:632
-#: friends.php:947
-msgid "Find Friends"
-msgstr ""
-
-#: friends.php:265
-#: friends.php:1021
-msgid "Friend Requests"
-msgstr ""
-
-#: friends.php:276
 #: friends.php:277
+#: friends.php:278
+#: friends.php:324
+#: friends.php:325
 msgid "Friends Settings"
 msgstr ""
 
-#: friends.php:299
-msgid "Cheatin&#8217; uh?"
-msgstr ""
-
-#: friends.php:309
-msgid "Friend Removed"
-msgstr ""
-
+#. #-#-#-#-#  friends.pot (Friends 1.3.1.1)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: friends.php:294
+#: friends.php:295
+#: friends.php:302
 #: friends.php:310
-msgid "Friend will be added pending approval."
+#: friends.php:703
+#: friends.php:771
+#: friends.php:792
+#: friends.php:1051
+#: friends.php:1870
+#: friends.php:1935
+#: friends.php:1936
+msgid "Friends"
+msgstr ""
+
+#: friends.php:303
+#: friends.php:712
+#: friends.php:980
+msgid "Find Friends"
 msgstr ""
 
 #: friends.php:311
+#: friends.php:1110
+msgid "Friend Requests"
+msgstr ""
+
+#: friends.php:348
+msgid "Cheatin&#8217; uh?"
+msgstr ""
+
+#: friends.php:358
+msgid "Friend Removed"
+msgstr ""
+
+#: friends.php:359
+msgid "Friend will be added pending approval."
+msgstr ""
+
+#: friends.php:360
 msgid "Friend Request Approved"
 msgstr ""
 
-#: friends.php:312
+#: friends.php:361
 msgid "Friend Request Rejected"
 msgstr ""
 
-#: friends.php:313
+#: friends.php:362
 msgid "Quick Message Success."
 msgstr ""
 
-#: friends.php:314
+#: friends.php:363
 msgid "Quick Message Failed."
 msgstr ""
 
-#: friends.php:343
+#: friends.php:386
+msgid "Settings saved"
+msgstr ""
+
+#: friends.php:394
 msgid "Email Request Template"
 msgstr ""
 
-#: friends.php:349
+#: friends.php:400
 msgid "Email Approval Template"
 msgstr ""
 
-#: friends.php:355
+#: friends.php:406
 msgid "Email Rejection Template"
 msgstr ""
 
-#: friends.php:361
-msgid "Messaging"
-msgstr ""
-
-#: friends.php:570
-msgid "For better messaging install the"
-msgstr ""
-
-#: friends.php:599
+#: friends.php:679
 msgid "The Friends plugin lets users connect with other users within the WordPress Multisite environment. Once connected friends can send message to each other. Also available is a handy widget to display a user's friends listing"
 msgstr ""
 
-#: friends.php:601
+#: friends.php:681
 msgid "The Friends listing page will show all user your have connections with. From the listing you can send messages to users. Also you can remove users who may have become unfriendly."
 msgstr ""
 
-#: friends.php:601
+#: friends.php:681
 msgid "<strong>Friend</strong> - This is the user's display name."
 msgstr ""
 
-#: friends.php:601
+#: friends.php:681
 msgid "<strong>Avatar</strong> - The user's avatar"
 msgstr ""
 
-#: friends.php:601
+#: friends.php:681
 msgid "<strong>Send Message</strong> - Once you are connected to other friends you can send them messages."
 msgstr ""
 
-#: friends.php:601
+#: friends.php:681
 msgid "<strong>View Blog</strong> - View the user's blog"
 msgstr ""
 
-#: friends.php:601
+#: friends.php:681
 msgid "<strong>Remove</strong> - Allows you to remove the user as a friend."
 msgstr ""
 
-#: friends.php:604
+#: friends.php:684
 msgid "Using the search on this page you can search for other users within this Multisite system. You can locate other user by searching for Name, Login or Email. Click the Search button and all matching users will be listed. Beside each user will be an Add link which will create a request to the user. The user will need to accept the request to complete the friend connection. Within the list if you see Pending instead of Add this means the friend request has already been sent to this user."
 msgstr ""
 
-#: friends.php:606
+#: friends.php:686
 msgid "When another user requests you to be their friend they will be listed on this page. To complete the friend connection you must approve the request. You may also opt to reject the request."
 msgstr ""
 
-#: friends.php:608
+#: friends.php:688
 msgid "This page contains various metaboxes to let you control the email templates used during the friend connection processing."
 msgstr ""
 
-#: friends.php:608
+#: friends.php:688
 msgid "<strong>Email Request Template</strong> - This template contains the Subject and Content used when one user requests to be friend's with another user. "
 msgstr ""
 
-#: friends.php:608
+#: friends.php:688
 msgid "<strong>Email Approval Template</strong> - This template contains the Subject and Content used when one user approves a friend request from another user. "
 msgstr ""
 
-#: friends.php:608
+#: friends.php:688
 msgid "<strong>Email Rejection Template</strong> - This template contains the Subject and Content used when one user rejects a friend request from another user. "
 msgstr ""
 
-#: friends.php:614
+#: friends.php:694
 msgid "Overview"
 msgstr ""
 
-#: friends.php:640
+#: friends.php:720
 msgid "Friend Request"
 msgstr ""
 
-#: friends.php:648
+#: friends.php:728
 msgid "Friend Settings"
 msgstr ""
 
-#: friends.php:811
-#: friends.php:814
-#: friends.php:817
-#: friends.php:1057
-#: friends.php:1062
-#: friends.php:1067
+#: friends.php:822
+#: friends.php:825
+#: friends.php:828
+#: friends.php:1146
+#: friends.php:1151
+#: friends.php:1156
 msgid "Previous Page"
 msgstr ""
 
-#: friends.php:821
-#: friends.php:823
-#: friends.php:1074
-#: friends.php:1078
+#: friends.php:832
+#: friends.php:834
+#: friends.php:1163
+#: friends.php:1167
 msgid "Next Page"
 msgstr ""
 
-#: friends.php:833
+#: friends.php:844
 msgid "Friend"
 msgstr ""
 
-#: friends.php:834
-#: friends.php:1092
+#: friends.php:845
+#: friends.php:1181
 msgid "Avatar"
 msgstr ""
 
-#: friends.php:835
-#: friends.php:1093
+#: friends.php:846
+#: friends.php:1182
 msgid "Actions"
 msgstr ""
 
-#: friends.php:864
-#: friends.php:869
+#: friends.php:887
 msgid "Send Message"
 msgstr ""
 
-#: friends.php:875
-#: friends.php:878
-#: friends.php:1122
-#: friends.php:1125
+#: friends.php:903
+#: friends.php:906
+#: friends.php:1213
+#: friends.php:1216
 msgid "View Blog"
 msgstr ""
 
-#: friends.php:881
+#: friends.php:909
 msgid "Remove"
 msgstr ""
 
-#: friends.php:886
+#: friends.php:919
 msgid "Your friends list is currently empty"
 msgstr ""
 
-#: friends.php:914
+#: friends.php:947
 msgid "Send Message To"
 msgstr ""
 
-#: friends.php:917
+#: friends.php:950
 msgid "Quick Message"
 msgstr ""
 
-#: friends.php:920
+#: friends.php:953
 msgid "Message"
 msgstr ""
 
-#: friends.php:924
+#: friends.php:957
 msgid "Send"
 msgstr ""
 
-#: friends.php:947
+#: friends.php:984
 msgid "Search by friends display name, username or email address"
 msgstr ""
 
-#: friends.php:952
+#: friends.php:989
+msgid "Show existing friends"
+msgstr ""
+
+#: friends.php:991
 msgid "Search"
 msgstr ""
 
-#: friends.php:980
+#: friends.php:1061
 msgid "Pending"
 msgstr ""
 
-#: friends.php:983
+#: friends.php:1065
 msgid "Add"
 msgstr ""
 
-#: friends.php:998
+#: friends.php:1087
 msgid "Nothing found"
 msgstr ""
 
-#: friends.php:1090
+#: friends.php:1179
 msgid "ID"
 msgstr ""
 
-#: friends.php:1091
-#: friends.php:1606
+#: friends.php:1180
+#: friends.php:1815
 msgid "User"
 msgstr ""
 
-#: friends.php:1130
+#: friends.php:1221
 msgid "Approve"
 msgstr ""
 
-#: friends.php:1132
+#: friends.php:1223
 msgid "Reject"
 msgstr ""
 
-#: friends.php:1139
-msgid "No items in queue"
+#: friends.php:1230
+msgid "No pending Friend requests"
 msgstr ""
 
-#: friends.php:1161
+#: friends.php:1252
 msgctxt "Friends Plugin Page Title"
 msgid "Friends Settings"
 msgstr ""
 
-#: friends.php:1197
+#: friends.php:1288
 msgid "This Email template is used when one user requests to be friends with another user."
 msgstr ""
 
-#: friends.php:1218
-#: friends.php:1256
-#: friends.php:1295
+#: friends.php:1309
+#: friends.php:1347
+#: friends.php:1386
 msgid "Save Changes"
 msgstr ""
 
-#: friends.php:1220
-#: friends.php:1258
-#: friends.php:1297
+#: friends.php:1311
+#: friends.php:1349
+#: friends.php:1388
 msgid "Reset to Default"
 msgstr ""
 
-#: friends.php:1236
+#: friends.php:1327
 msgid "This Email template is used when a user receives a request from another user to become friends. And the user approves the friend request."
 msgstr ""
 
-#: friends.php:1274
+#: friends.php:1365
 msgid "This Email template is used when a user receives a request from another user to become friends. And the user reject the friend request."
 msgstr ""
 
-#: friends.php:1313
+#: friends.php:1404
 msgid "Instructions: Use the following replaceable tokens in your message. These will be replaced with the real information for user, site, content, etc.. Note all tokens are wrapped in square brackets."
 msgstr ""
 
-#: friends.php:1315
+#: friends.php:1406
 msgid "The name of the sender's primary site"
 msgstr ""
 
-#: friends.php:1316
+#: friends.php:1407
 msgid "The URL of the sender's primary site"
 msgstr ""
 
-#: friends.php:1317
+#: friends.php:1408
 msgid "The user name requesting friendship."
 msgstr ""
 
-#: friends.php:1318
+#: friends.php:1409
 msgid "The user name being friended."
 msgstr ""
 
-#: friends.php:1319
+#: friends.php:1410
 msgid "The TO_USER primary site admin page for the Friend Request."
 msgstr ""
 
-#: friends.php:1637
+#: friends.php:1846
 msgid "Display"
 msgstr ""
 
-#: friends.php:1639
+#: friends.php:1848
 msgid "Mosaic"
 msgstr ""
 
-#: friends.php:1640
+#: friends.php:1849
 msgid "List"
-msgstr ""
-
-#: friends.php:1731
-msgid "Please install the latest version of <a href=\"http://premium.wpmudev.org/project/update-notifications/\" title=\"Download Now &raquo;\">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href=\"http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/\">More information &raquo;</a>"
 msgstr ""
 
 #. Plugin URI of the plugin/theme

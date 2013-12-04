@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: Paul Menard (Incsub)
 Author URI: http://premium.wpmudev.org
-Version: 1.3.1
+Version: 1.3.1.1
 Network: true
 WDP ID: 62
 Domain Path: languages
@@ -25,8 +25,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-
-include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php');
 
 if (!defined('WPMUDEV_FRIENDS_I18N_DOMAIN'))
 	define('WPMUDEV_FRIENDS_I18N_DOMAIN', 'friends');
@@ -54,18 +52,6 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		private $_admin_header_warning;	// Set during processing will contain processing warnings to display back to the user
 
 		/**
-		 * The old-style PHP Class constructor. Used when an instance of this class 
-	 	 * is needed. If used (PHP4) this function calls the PHP5 version of the constructor.
-		 *
-		 * @since 1.2.1
-		 * @param none
-		 * @return self
-		 */
-	    function WPMUDev_Friends() {
-	        $this->__construct();
-	    }
-
-		/**
 		 * The PHP5 Class constructor. Used when an instance of this class is needed.
 		 * Sets up the initial object environment and hooks into the various WordPress 
 		 * actions and filters.
@@ -83,6 +69,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			
 			$this->_admin_header_error 					= "";		
 			$this->_admin_header_warning 				= "";
+			
+			// Add support for new WPMUDEV Dashboard Notices
+			global $wpmudev_notices;
+			$wpmudev_notices[] = array( 'id'=> 62,'name'=> 'Friends', 'screens' => array( 'toplevel_page_friend-settings-network', 'toplevel_page_friends', 'friends_page_find-friends', 'friends_page_friend-requests' ) );
+			include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php' );
 			
 			/* Setup the tetdomain for i18n language handling see http://codex.wordpress.org/Function_Reference/load_plugin_textdomain */
 	        
@@ -107,6 +98,17 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			add_action( 'edit_user_profile_update', array(&$this, 'friends_user_save' ) );
 		}
 	
+		/**
+		 * The old-style PHP Class constructor. Used when an instance of this class 
+	 	 * is needed. If used (PHP4) this function calls the PHP5 version of the constructor.
+		 *
+		 * @since 1.2.1
+		 * @param none
+		 * @return self
+		 */
+	    function WPMUDev_Friends() {
+	        $this->__construct();
+	    }	
 		
 		/**
 		 * The activation hook process to setup the database. 
