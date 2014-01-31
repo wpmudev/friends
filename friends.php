@@ -3,7 +3,7 @@
 Plugin Name: Friends
 Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
-Author: Paul Menard (Incsub)
+Author: WPMU DEV
 Author URI: http://premium.wpmudev.org
 Version: 1.3.1.1
 Network: true
