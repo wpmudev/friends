@@ -5,10 +5,11 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: WPMU DEV
 Author URI: http://premium.wpmudev.org
-Version: 1.3.1.2
+Version: 1.3.1.3
 Network: true
 WDP ID: 62
-Domain Path: languages
+Text Domain: friends
+Domain Path: /languages
 
 Copyright 2007-2012 Incsub (http://incsub.com)
 
@@ -1017,8 +1018,10 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							'blog_id'			=>	'',
 							'search'			=>	'*'. $tmp_search_terms .'*',
 							'search_columns'	=>	array('user_login', 'user_nicename', 'user_email'),
-							'fields'			=>	array('ID', 'display_name', 'user_login')
+							'fields'			=>	array('ID', 'display_name', 'user_login', 'user_email')
 						);
+						//echo "search_args<pre>"; print_r($search_args); echo "</pre>";
+						
 						$user_query = new WP_User_Query($search_args);
 						//echo "results<pre>"; print_r($user_query); echo "</pre>";
 						if ((isset($user_query->results)) && (count($user_query->results))) {
