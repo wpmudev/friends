@@ -5,7 +5,7 @@ Plugin URI: http://premium.wpmudev.org/project/friends
 Description: Lets your users 'friend' each other, display funky widgets with avatar mosaics of all their friends on the site and generally get all social!
 Author: WPMU DEV
 Author URI: http://premium.wpmudev.org
-Version: 1.3.1.3
+Version: 1.3.2
 Network: true
 WDP ID: 62
 Text Domain: friends
@@ -26,9 +26,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-
-if (!defined('WPMUDEV_FRIENDS_I18N_DOMAIN'))
-	define('WPMUDEV_FRIENDS_I18N_DOMAIN', 'friends');
 
 $FRIENDS_ALLOWED_CONTENT_TAGS = array(
 	'a' 		=> 	array('href' => array(),'title' => array()),
@@ -79,9 +76,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			/* Setup the tetdomain for i18n language handling see 
 			http://codex.wordpress.org/Function_Reference/load_plugin_textdomain */
 			if (preg_match('/mu\-plugin/', PLUGINDIR) > 0) {
-				load_muplugin_textdomain( WPMUDEV_FRIENDS_I18N_DOMAIN, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+				load_muplugin_textdomain( 'friends', dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 			} else {
-				load_plugin_textdomain( WPMUDEV_FRIENDS_I18N_DOMAIN, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+				load_plugin_textdomain( 'friends', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 			}
 
 			register_activation_hook( __FILE__, 	array(&$this, 'friends_global_install' ) );
@@ -184,23 +181,23 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 			$tmp_friend_email_notification = get_user_meta( $user->ID, 'friend_email_notification', true ); 
 			?>
-			<h3><?php _e('Friends Notifications', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></h3>
+			<h3><?php _e('Friends Notifications', 'friends'); ?></h3>
 
 			<table class="form-table">
 			<tr valign="top">
 			    <th><label for="message_email_notification"><?php _e('Email Notification',
-		 			WPMUDEV_FRIENDS_I18N_DOMAIN) ?></label>
+		 			'friends') ?></label>
 				</th>
 				<td>					
 			        <select name="message_email_notification" id="message_email_notification">
 			            <option value="yes" <?php 
 							if ( $tmp_friend_email_notification == 'yes' ) 
-								{ echo 'selected="selected"'; } ?> ><?php _e('Yes', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></option>
+								{ echo 'selected="selected"'; } ?> ><?php _e('Yes', 'friends') ?></option>
 			            <option value="no"  <?php 
 							if ( $tmp_friend_email_notification == 'no' )  
-							{ echo 'selected="selected"'; } ?> ><?php _e('No', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></option>
+							{ echo 'selected="selected"'; } ?> ><?php _e('No', 'friends') ?></option>
 			        </select> <span class="description"><?php 
-						_e('Receive an email when someone adds you as a friend', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></span>					
+						_e('Receive an email when someone adds you as a friend', 'friends'); ?></span>					
 			    </td>
 			</tr>
 			</table>
@@ -274,8 +271,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			// Are we viewing the Network 
 			if (is_network_admin()) {
 				$this->_pagehooks['friends-settings'] = add_menu_page( 	
-								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								__('Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+								__('Friends Settings', 'friends' ), 
+								__('Friends Settings', 'friends' ), 
 								'manage_network_options', 
 								'friend-settings', 
 								array(&$this, 'friends_settings_output')
@@ -291,24 +288,24 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						. $request_count . '</span></span>';				
 				}
 
-			    $this->_pagehooks['friends'] = add_menu_page( 	__('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								__('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+			    $this->_pagehooks['friends'] = add_menu_page( 	__('Friends', 'friends' ), 
+								__('Friends', 'friends' ), 
 								'read', 
 								'friends', 
 								array(&$this, 'friends_page_output')
 				);
 				
 			    $this->_pagehooks['find-friends'] = add_submenu_page( 'friends', 
-								__('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								__('Find Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+								__('Friends', 'friends' ), 
+								__('Find Friends', 'friends' ), 
 								'read', 
 								'find-friends', 
 								array(&$this, 'friends_find_output') 
 				);
 			
 			    $this->_pagehooks['friend-requests'] = add_submenu_page( 'friends', 
-								__( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-								__( 'Friend Requests', WPMUDEV_FRIENDS_I18N_DOMAIN ) . $count_output, 
+								__( 'Friends', 'friends' ), 
+								__( 'Friend Requests', 'friends' ) . $count_output, 
 								'read', 
 								'friend-requests', 
 								array(&$this, 'friends_requests_output')
@@ -321,8 +318,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				
 				if (!is_multisite()) {
 				    $this->_pagehooks['friends-settings'] = add_submenu_page( 'friends', 
-									__( 'Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
-									__( 'Friends Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ), 
+									__( 'Friends Settings', 'friends' ), 
+									__( 'Friends Settings', 'friends' ), 
 									'manage_options', 
 									'friend-settings', 
 									array(&$this, 'friends_settings_output')
@@ -355,12 +352,12 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			$this->friends_admin_plugin_help();
 			
 			/* These messages are displayed as part of the admin header message see 'admin_notices' WordPress action */
-			$this->_messages['success-remove'] 			= __( "Friend Removed", WPMUDEV_FRIENDS_I18N_DOMAIN );
-			$this->_messages['success-add'] 			= __( "Friend will be added pending approval.", WPMUDEV_FRIENDS_I18N_DOMAIN );
-			$this->_messages['friend-approved'] 		= __( "Friend Request Approved", WPMUDEV_FRIENDS_I18N_DOMAIN );
-			$this->_messages['friend-rejected'] 		= __( "Friend Request Rejected", WPMUDEV_FRIENDS_I18N_DOMAIN );
-			$this->_messages['message-send-success'] 	= __( "Quick Message Success.", WPMUDEV_FRIENDS_I18N_DOMAIN );
-			$this->_messages['message-send-fail'] 		= __( "Quick Message Failed.", WPMUDEV_FRIENDS_I18N_DOMAIN );
+			$this->_messages['success-remove'] 			= __( "Friend Removed", 'friends' );
+			$this->_messages['success-add'] 			= __( "Friend will be added pending approval.", 'friends' );
+			$this->_messages['friend-approved'] 		= __( "Friend Request Approved", 'friends' );
+			$this->_messages['friend-rejected'] 		= __( "Friend Request Rejected", 'friends' );
+			$this->_messages['message-send-success'] 	= __( "Quick Message Success.", 'friends' );
+			$this->_messages['message-send-fail'] 		= __( "Quick Message Failed.", 'friends' );
 						
 			wp_enqueue_style( 'friends-admin-stylesheet', plugins_url('css/friends-admin.css', __FILE__), false);	
 			
@@ -383,34 +380,34 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			
 			$this->friends_on_load_panels();
 			
-			$this->_messages['settings-saved'] 			= __( "Settings saved", WPMUDEV_FRIENDS_I18N_DOMAIN );
+			$this->_messages['settings-saved'] 			= __( "Settings saved", 'friends' );
 			
 			wp_enqueue_script('common');
 			wp_enqueue_script('wp-lists');
 			wp_enqueue_script('postbox');
 			
 			if (((is_multisite()) && (is_network_admin())) || (!is_multisite())) {
-				add_meta_box('friends-display-panel-email-request', 
-					__('Email Request Template', WPMUDEV_FRIENDS_I18N_DOMAIN), 
+				add_meta_box('friends_display_style-panel-email-request', 
+					__('Email Request Template', 'friends'), 
 					array(&$this, 'friends_metabox_show_email_request'), 
 					$this->_pagehooks['friends-settings'], 
 					'normal', 'core');
 
-				add_meta_box('friends-display-panel-email-approval', 
-					__('Email Approval Template', WPMUDEV_FRIENDS_I18N_DOMAIN), 
+				add_meta_box('friends_display_style-panel-email-approval', 
+					__('Email Approval Template', 'friends'), 
 					array(&$this, 'friends_metabox_show_email_approval'), 
 					$this->_pagehooks['friends-settings'], 
 					'normal', 'core');
 
-				add_meta_box('friends-display-panel-email-rejection', 
-					__('Email Rejection Template', WPMUDEV_FRIENDS_I18N_DOMAIN), 
+				add_meta_box('friends_display_style-panel-email-rejection', 
+					__('Email Rejection Template', 'friends'), 
 					array(&$this, 'friends_metabox_show_email_rejection'), 
 					$this->_pagehooks['friends-settings'], 
 					'normal', 'core');
 
 /*
-				add_meta_box('friends-display-panel-messaging', 
-					__('Messaging', WPMUDEV_FRIENDS_I18N_DOMAIN), 
+				add_meta_box('friends_display_style-panel-messaging', 
+					__('Messaging', 'friends'), 
 					array(&$this, 'friends_metabox_show_messaging'), 
 					$this->_pagehooks['friends-settings'], 
 					'normal', 'core');
@@ -647,7 +644,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						} if ($this->_settings['plugins']['messaging'] != true) {
 							
 							$this->_admin_header_warning = 
-							__('For better messaging install the', WPMUDEV_FRIENDS_I18N_DOMAIN) . ' <a href="http://premium.wpmudev.org/project/messaging">WPMU Dev Messaging plugin</a>';
+							__('For better messaging install the', 'friends') . ' <a href="http://premium.wpmudev.org/project/messaging">WPMU Dev Messaging plugin</a>';
 						}
 						break;
 */					
@@ -676,22 +673,22 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			//echo "screen<pre>"; print_r($screen); echo "</pre>";
 
 			$screen_help_text = array();
-			$screen_help_text['friends-help-overview'] = '<p>' . __( "The Friends plugin lets users connect with other users within the WordPress Multisite environment. Once connected friends can send message to each other. Also available is a handy widget to display a user's friends listing", WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p>';
+			$screen_help_text['friends-help-overview'] = '<p>' . __( "The Friends plugin lets users connect with other users within the WordPress Multisite environment. Once connected friends can send message to each other. Also available is a handy widget to display a user's friends listing", 'friends' ) . '</p>';
 
-			$screen_help_text['friends-help-friends'] = '<p>'. __('The Friends listing page will show all user your have connections with. From the listing you can send messages to users. Also you can remove users who may have become unfriendly.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __("<strong>Friend</strong> - This is the user's display name.", WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __("<strong>Avatar</strong> - The user's avatar", WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __( '<strong>Send Message</strong> - Once you are connected to other friends you can send them messages.', WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p><p>' . __("<strong>View Blog</strong> - View the user's blog", WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __( '<strong>Remove</strong> - Allows you to remove the user as a friend.', WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p>';
+			$screen_help_text['friends-help-friends'] = '<p>'. __('The Friends listing page will show all user your have connections with. From the listing you can send messages to users. Also you can remove users who may have become unfriendly.', 'friends' ) .'</p><p>' . __("<strong>Friend</strong> - This is the user's display name.", 'friends' ) .'</p><p>' . __("<strong>Avatar</strong> - The user's avatar", 'friends' ) .'</p><p>' . __( '<strong>Send Message</strong> - Once you are connected to other friends you can send them messages.', 'friends' ) . '</p><p>' . __("<strong>View Blog</strong> - View the user's blog", 'friends' ) .'</p><p>' . __( '<strong>Remove</strong> - Allows you to remove the user as a friend.', 'friends' ) . '</p>';
 
 
-			$screen_help_text['friend-help-find'] = '<p>' . __( 'Using the search on this page you can search for other users within this Multisite system. You can locate other user by searching for Name, Login or Email. Click the Search button and all matching users will be listed. Beside each user will be an Add link which will create a request to the user. The user will need to accept the request to complete the friend connection. Within the list if you see Pending instead of Add this means the friend request has already been sent to this user.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p>';
+			$screen_help_text['friend-help-find'] = '<p>' . __( 'Using the search on this page you can search for other users within this Multisite system. You can locate other user by searching for Name, Login or Email. Click the Search button and all matching users will be listed. Beside each user will be an Add link which will create a request to the user. The user will need to accept the request to complete the friend connection. Within the list if you see Pending instead of Add this means the friend request has already been sent to this user.', 'friends' ) .'</p>';
 
-			$screen_help_text['friend-help-request'] = '<p>' . __( 'When another user requests you to be their friend they will be listed on this page. To complete the friend connection you must approve the request. You may also opt to reject the request.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p>';
+			$screen_help_text['friend-help-request'] = '<p>' . __( 'When another user requests you to be their friend they will be listed on this page. To complete the friend connection you must approve the request. You may also opt to reject the request.', 'friends' ) .'</p>';
 
-			$screen_help_text['friend-help-settings'] = '<p>' . __( 'This page contains various metaboxes to let you control the email templates used during the friend connection processing.', WPMUDEV_FRIENDS_I18N_DOMAIN ) .'</p><p>' . __("<strong>Email Request Template</strong> - This template contains the Subject and Content used when one user requests to be friend's with another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . '</p><p>' . __("<strong>Email Approval Template</strong> - This template contains the Subject and Content used when one user approves a friend request from another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . "</p><p>" . __("<strong>Email Rejection Template</strong> - This template contains the Subject and Content used when one user rejects a friend request from another user. ", WPMUDEV_FRIENDS_I18N_DOMAIN ) . "</p>";
+			$screen_help_text['friend-help-settings'] = '<p>' . __( 'This page contains various metaboxes to let you control the email templates used during the friend connection processing.', 'friends' ) .'</p><p>' . __("<strong>Email Request Template</strong> - This template contains the Subject and Content used when one user requests to be friend's with another user. ", 'friends' ) . '</p><p>' . __("<strong>Email Approval Template</strong> - This template contains the Subject and Content used when one user approves a friend request from another user. ", 'friends' ) . "</p><p>" . __("<strong>Email Rejection Template</strong> - This template contains the Subject and Content used when one user rejects a friend request from another user. ", 'friends' ) . "</p>";
 
 			if ( version_compare( $wp_version, '3.3.0', '>' ) ) {
 
 				$screen->add_help_tab( array(
 					'id'		=> 'friends-help-overview',
-					'title'		=> __('Overview', WPMUDEV_FRIENDS_I18N_DOMAIN ),
+					'title'		=> __('Overview', 'friends' ),
 					'content'	=> $screen_help_text['friends-help-overview']
 		    		) 
 				);		
@@ -700,7 +697,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-friends',
-						'title'		=> __('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ),
+						'title'		=> __('Friends', 'friends' ),
 						'content'	=>  $screen_help_text['friends-help-friends']
 				    	) 
 					);
@@ -709,7 +706,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-find',
-						'title'		=> __('Find Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ),
+						'title'		=> __('Find Friends', 'friends' ),
 						'content'	=> $screen_help_text['friend-help-find']
 					    ) 
 					);
@@ -717,7 +714,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-requests',
-						'title'		=> __('Friend Request', WPMUDEV_FRIENDS_I18N_DOMAIN ),
+						'title'		=> __('Friend Request', 'friends' ),
 						'content'	=> $screen_help_text['friend-help-request']
 					    ) 
 					);
@@ -725,7 +722,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 					$screen->add_help_tab( array(
 						'id'		=> 'friends-help-settings',
-						'title'		=> __('Friend Settings', WPMUDEV_FRIENDS_I18N_DOMAIN ),
+						'title'		=> __('Friend Settings', 'friends' ),
 						'content'	=> $screen_help_text['friend-help-settings']
 					    ) 
 					);
@@ -768,7 +765,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		function friends_page_output() {
 		    global $wpdb, $user_ID;
 
-			$title = __( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN );
+			$title = __( 'Friends', 'friends' );
 
 		    $tmp_friends_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix 
 				. "friends WHERE user_ID = %d AND friend_approved = %d", $user_ID, '1'));
@@ -789,7 +786,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 //			} else {
 				?>
 				<div class="wrap friends-wrap">
-					<h2><?php _e('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></h2>
+					<h2><?php _e('Friends', 'friends') ?></h2>
 					<?php					
 						if ( !isset( $_GET[ 'start' ] )) {
 							$start = 0;
@@ -819,19 +816,19 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 								//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
 
 								if( $start == 0 ) {
-									echo __('Previous Page', WPMUDEV_FRIENDS_I18N_DOMAIN);
+									echo __('Previous Page', 'friends');
 								} elseif( $start <= $num ) {
 									echo '<a href="admin.php?page=friends&start=0&' . $order_sort . ' ">' 
-										. __('Previous Page', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>';
+										. __('Previous Page', 'friends') . '</a>';
 								} else {
 									echo '<a href="admin.php?page=friends&start=' . ( $start - $num ) . '&' 
-										. $order_sort . '">' . __('Previous Page', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>';
+										. $order_sort . '">' . __('Previous Page', 'friends') . '</a>';
 								}
 								if ( $next ) {
 									echo '&nbsp;||&nbsp;<a href="admin.php?page=friends&start=' . ( $start + $num ) . '&' 
-										. $order_sort . '">' . __('Next Page', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>';
+										. $order_sort . '">' . __('Next Page', 'friends') . '</a>';
 								} else {
-									echo '&nbsp;||&nbsp;' . __('Next Page', WPMUDEV_FRIENDS_I18N_DOMAIN);
+									echo '&nbsp;||&nbsp;' . __('Next Page', 'friends');
 								}
 								?>
 								</td></tr></table>
@@ -841,9 +838,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							?>
 							<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 							<thead><tr>
-								<th scope='col'><?php _e('Friend', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
-								<th scope='col'><?php _e('Avatar', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
-								<th scope='col'><?php _e('Actions', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
+								<th scope='col'><?php _e('Friend', 'friends') ?></th>
+								<th scope='col'><?php _e('Avatar', 'friends') ?></th>
+								<th scope='col'><?php _e('Actions', 'friends') ?></th>
 
 								<?php
 									if ($this->_settings['plugins']['messaging'] == true) {
@@ -884,7 +881,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
                             			echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" 
 											. $tmp_user_login . "' rel='permalink' class='edit'>" 
-											. __('Send Message', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+											. __('Send Message', 'friends') . "</a></td>";
 									} 
 
 									if ($this->_settings['plugins']['chat'] == true) {
@@ -900,23 +897,23 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 	                        		if ($tmp_blog_url != '') {
 	                            		echo "<td valign='top'><a href='" . $tmp_blog_url . "' rel='permalink' class='edit'>" 
-											. __('View Blog', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+											. __('View Blog', 'friends') . "</a></td>";
 	                        		} else {
 	                            		echo "<td valign='top'><a class='edit' style='color:#999999;text-decoration:none;border:0px;'>" 
-											. __('View Blog', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+											. __('View Blog', 'friends') . "</a></td>";
 	                        		}
 	                        		echo "<td valign='top'><a href='admin.php?page=friends&action=remove&fid=" . $tmp_friend->friend_ID
-										. "' rel='permalink' class='delete'>" . __('Remove', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+										. "' rel='permalink' class='delete'>" . __('Remove', 'friends') . "</a></td>";
 	                        		echo "</tr>";
 								}
 							?></tbody></table><?php
 							if ($this->_settings['plugins']['messaging'] != true) {
 								echo "<p>" . __(sprintf('Install the %s plugin to allow sending messages to friends', 
-									'<a target="_blank" href="http://premium.wpmudev.org/project/messaging">WPMU Dev Messaging </a>'), WPMUDEV_FRIENDS_I18N_DOMAIN) ."</p>";
+									'<a target="_blank" href="http://premium.wpmudev.org/project/messaging">WPMU Dev Messaging </a>'), 'friends') ."</p>";
 								
 							}
 						} else {
-							?><p><?php _e('Your friends list is currently empty', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></p><?php
+							?><p><?php _e('Your friends list is currently empty', 'friends') ?></p><?php
 					}
 				?></div><?php
 //			}
@@ -944,17 +941,17 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						$tmp_display_name = $tmp_display_name . ' (' . $tmp_user_login . ')';
 					}
 					?>
-					<h2><?php _e('Send Message To', WPMUDEV_FRIENDS_I18N_DOMAIN) ?> <em><?php echo $tmp_display_name; ?></em></h2>
+					<h2><?php _e('Send Message To', 'friends') ?> <em><?php echo $tmp_display_name; ?></em></h2>
 					<form name="new_message" method="post">
 						<input type="hidden" name="message_to" value="<?php echo $tmp_user_login; ?>" />
-						<input type="hidden" name="message_subject" value="<?php _e('Quick Message', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+						<input type="hidden" name="message_subject" value="<?php _e('Quick Message', 'friends') ?>" />
 						<table class="form-table">
 						<tr valign="top">
-							<th scope="row"><?php _e('Message', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
+							<th scope="row"><?php _e('Message', 'friends') ?></th>
 							<td><input type="text" name="message_content" id="message_content" maxlength="200" value="" /></td>
 						</tr>
 						</table>
-						<p class="submit"><input type="submit" class="button-primary" name="quick_message" value="<?php _e('Send', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" /></p>
+						<p class="submit"><input type="submit" class="button-primary" name="quick_message" value="<?php _e('Send', 'friends') ?>" /></p>
 					</form>
 					<?php
 				}
@@ -977,18 +974,18 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 			?>
 			<div class="wrap friends-wrap">
-				<h2><?php _e('Find Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></h2>
+				<h2><?php _e('Find Friends', 'friends') ?></h2>
 				<form id="posts-filter" action="admin.php" method="get">
 					<input type="hidden" name="page" value="find-friends" />
 	                <p id="post-search">
 						<label for="post-search-input"><?php _e("Search by friends display name, username or email address", 
-							WPMUDEV_FRIENDS_I18N_DOMAIN) ?></label><br />
+							'friends') ?></label><br />
 	                    <input id="post-search-input" name="search_terms" value="<?php 
 							if (isset($_GET['search_terms'])) { echo stripslashes(sanitize_text_field($_GET['search_terms'])); } ?>" type="text"  /><br />
 
-						<input type="checkbox" id="search_show_friends" name="search_show_friends" <?php if (isset($_GET['search_show_friends'])) { echo ' checked="checked" '; } ?> />&nbsp;<label for="search_show_friends"><?php _e('Show existing friends', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></label><br />
+						<input type="checkbox" id="search_show_friends" name="search_show_friends" <?php if (isset($_GET['search_show_friends'])) { echo ' checked="checked" '; } ?> />&nbsp;<label for="search_show_friends"><?php _e('Show existing friends', 'friends'); ?></label><br />
 							
-	                    <input value="<?php _e('Search', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" class="button" type="submit" />
+	                    <input value="<?php _e('Search', 'friends') ?>" class="button" type="submit" />
 	                </p>
 				</form>
 				<?php
@@ -1059,7 +1056,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 									if (isset($_GET['search_show_friends'])) {
 										$friend_output .= '<span class="friend-status">(<a style="color:#999999;text-decoration:none;border:0px;">' 
-											. __('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>)</span>&nbsp;';
+											. __('Friends', 'friends') . '</a>)</span>&nbsp;';
 									} else {
 										continue;
 									}
@@ -1069,11 +1066,11 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 									 && (!isset($tmp_friend_results->t_approved)) ) {
 								
 									$friend_output .= '<span class="friend-status">(<a style="color:#999999;text-decoration:none;border:0px;">' 
-										. __('Pending', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>)</span>&nbsp;';
+										. __('Pending', 'friends') . '</a>)</span>&nbsp;';
 								} else {
 									$friend_output .= '<span class="friend-status">(<a href="admin.php?page=find-friends&action=add&id=' 
 										. $tmp_search_result->ID . '&search_terms=' 
-										. rawurlencode($tmp_search_terms) . '">' . __('Add', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>)</span>&nbsp;';
+										. rawurlencode($tmp_search_terms) . '">' . __('Add', 'friends') . '</a>)</span>&nbsp;';
 								}
 							
 
@@ -1095,7 +1092,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 							echo '</ul>';
 						} else {
 							?>
-							<p><?php _e('Nothing found', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></p>
+							<p><?php _e('Nothing found', 'friends') ?></p>
 							<?php
 						}
 					}
@@ -1118,7 +1115,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 			?>
 			<div class="wrap friends-wrap">
-				<h2><?php _e('Friend Requests', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></h2>
+				<h2><?php _e('Friend Requests', 'friends') ?></h2>
 				<?php
 
 					if ( isset( $_GET[ 'start' ] ) == false ) {
@@ -1154,28 +1151,28 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 							if( $start == 0 ) {
 
-								echo __('Previous Page', WPMUDEV_FRIENDS_I18N_DOMAIN);
+								echo __('Previous Page', 'friends');
 
 							} elseif( $start <= 30 ) {
 
 								echo '<a href="admin.php?page=friend-requests&start=0&' . $order_sort . ' ">' 
-									. __('Previous Page', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>';
+									. __('Previous Page', 'friends') . '</a>';
 
 							} else {
 
 								echo '<a href="admin.php?page=friend-requests&start=' . ( $start - $num ) . '&' . $order_sort . '">' 
-									. __('Previous Page', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>';
+									. __('Previous Page', 'friends') . '</a>';
 
 							}
 
 							if ( $next ) {
 
 								echo '&nbsp;||&nbsp;<a href="admin.php?page=friend-requests&start=' . ( $start + $num ) . '&' 
-									. $order_sort . '">' . __('Next Page', WPMUDEV_FRIENDS_I18N_DOMAIN) . '</a>';
+									. $order_sort . '">' . __('Next Page', 'friends') . '</a>';
 
 							} else {
 
-								echo '&nbsp;||&nbsp;' . __('Next Page', WPMUDEV_FRIENDS_I18N_DOMAIN);
+								echo '&nbsp;||&nbsp;' . __('Next Page', 'friends');
 
 							}
 							?>
@@ -1187,10 +1184,10 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 						<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 		                <thead>
 		                    <tr>
-		                        <th scope='col'><?php _e('ID', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
-		                        <th scope='col'><?php _e('User', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
-		                        <th scope='col'><?php _e('Avatar', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
-		                        <th scope='col'><?php _e('Actions', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></th>
+		                        <th scope='col'><?php _e('ID', 'friends') ?></th>
+		                        <th scope='col'><?php _e('User', 'friends') ?></th>
+		                        <th scope='col'><?php _e('Avatar', 'friends') ?></th>
+		                        <th scope='col'><?php _e('Actions', 'friends') ?></th>
 		                        <th scope='col'></th>
 		                        <th scope='col'></th>
 		                    </tr>
@@ -1222,23 +1219,23 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 		                        if ($tmp_blog_url != ''){
 		                            echo "<td valign='top'><a href='" . $tmp_blog_url . "' rel='permalink' class='edit'>" . __('View Blog',
-		 								WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+		 								'friends') . "</a></td>";
 		                        } else {
 		                            echo "<td valign='top'><a class='edit' style='color:#999999;text-decoration:none;border:0px;'>" . __('View Blog',
-		 								WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+		 								'friends') . "</a></td>";
 		                        }
 
 		                        echo "<td valign='top'><a href='admin.php?page=friend-requests&action=approve&fid=" . $tmp_friend['friend_ID'] 
-									. "' rel='permalink' class='edit'>" . __('Approve', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+									. "' rel='permalink' class='edit'>" . __('Approve', 'friends') . "</a></td>";
 		                        echo "<td valign='top'><a href='admin.php?page=friend-requests&action=reject&fid=" . $tmp_friend['friend_ID'] 
-									. "' rel='permalink' class='delete'>" . __('Reject', WPMUDEV_FRIENDS_I18N_DOMAIN) . "</a></td>";
+									. "' rel='permalink' class='delete'>" . __('Reject', 'friends') . "</a></td>";
 		                        echo "</tr>";
 							}
 						?>
 						</tbody></table>
 						<?php
 					}else {
-						?><p><?php _e('No pending Friend requests', WPMUDEV_FRIENDS_I18N_DOMAIN) ?></p><?php
+						?><p><?php _e('No pending Friend requests', 'friends') ?></p><?php
 					}
 				?>
 			</div>
@@ -1260,8 +1257,8 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 			?>
 			<div id="friends-settings-metaboxes-general" class="wrap friends-wrap">
 				<?php screen_icon('friends'); ?>
-				<h2><?php _ex("Friends Settings", "Friends Plugin Page Title", WPMUDEV_FRIENDS_I18N_DOMAIN); ?></h2>
-				<p><?php _ex("", 'Friends page description', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></p>
+				<h2><?php _ex("Friends Settings", "Friends Plugin Page Title", 'friends'); ?></h2>
+				<p><?php _ex("", 'Friends page description', 'friends'); ?></p>
 
 				<div id="poststuff" class="metabox-holder">
 					<div id="post-body" class="">
@@ -1296,7 +1293,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	
 		function friends_metabox_show_email_request() {
 			?>
-			<p><?php _e('This Email template is used when one user requests to be friends with another user.', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></p>
+			<p><?php _e('This Email template is used when one user requests to be friends with another user.', 'friends'); ?></p>
 			
             <form method="post" action="admin.php?page=friend-settings">
 				<input type="hidden" name="action" value="process" />
@@ -1317,9 +1314,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				</tr>
 				</table>
                 <input type="submit" class="button-primary" name="submit" 
-					value="<?php _e('Save Changes', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+					value="<?php _e('Save Changes', 'friends') ?>" />
 				<input type="submit" class="button-secondary" name="reset" 
-					value="<?php _e('Reset to Default', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+					value="<?php _e('Reset to Default', 'friends') ?>" />
 			</form>
 			<?php			
 		}
@@ -1335,7 +1332,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 
 		function friends_metabox_show_email_approval() {
 			?>
-			<p><?php _e('This Email template is used when a user receives a request from another user to become friends. And the user approves the friend request.', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></p>
+			<p><?php _e('This Email template is used when a user receives a request from another user to become friends. And the user approves the friend request.', 'friends'); ?></p>
             <form method="post" action="admin.php?page=friend-settings">
 				<input type="hidden" name="action" value="process" />
                 <table class="form-table">
@@ -1355,9 +1352,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				</tr>
 				</table>
                 <input type="submit" class="button-primary" name="submit" 
-					value="<?php _e('Save Changes', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+					value="<?php _e('Save Changes', 'friends') ?>" />
 				<input type="submit" class="button-secondary" name="reset" 
-					value="<?php _e('Reset to Default', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+					value="<?php _e('Reset to Default', 'friends') ?>" />
 			</form>
 			<?php			
 		}
@@ -1373,7 +1370,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 	
 		function friends_metabox_show_email_rejection() {
 			?>
-			<p><?php _e('This Email template is used when a user receives a request from another user to become friends. And the user reject the friend request.', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></p>
+			<p><?php _e('This Email template is used when a user receives a request from another user to become friends. And the user reject the friend request.', 'friends'); ?></p>
 			
             <form method="post" action="admin.php?page=friend-settings">
 				<input type="hidden" name="action" value="process" />
@@ -1394,9 +1391,9 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 				</tr>
 				</table>
                 <input type="submit" class="button-primary" name="submit" 
-					value="<?php _e('Save Changes', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+					value="<?php _e('Save Changes', 'friends') ?>" />
 				<input type="submit" class="button-secondary" name="reset" 
-					value="<?php _e('Reset to Default', WPMUDEV_FRIENDS_I18N_DOMAIN) ?>" />
+					value="<?php _e('Reset to Default', 'friends') ?>" />
 			</form>
 			<?php			
 		}
@@ -1412,13 +1409,13 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 		
 		function show_metabox_instructions() {
 			?>
-			<p><?php _e('Instructions: Use the following replaceable tokens in your message. These will be replaced with the real information for user, site, content, etc.. Note all tokens are wrapped in square brackets.', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></p>
+			<p><?php _e('Instructions: Use the following replaceable tokens in your message. These will be replaced with the real information for user, site, content, etc.. Note all tokens are wrapped in square brackets.', 'friends'); ?></p>
 			<ul class="friends-instructions">
-				<li><span class="label">[SITE_NAME]</span> - <?php _e("The name of the sender's primary site", WPMUDEV_FRIENDS_I18N_DOMAIN); ?></li>
-				<li><span class="label">[SITE_URL]</span> - <?php _e("The URL of the sender's primary site", WPMUDEV_FRIENDS_I18N_DOMAIN); ?></li>
-				<li><span class="label">[FROM_USER]</span> - <?php _e("The user name requesting friendship.", WPMUDEV_FRIENDS_I18N_DOMAIN); ?></li>
-				<li><span class="label">[TO_USER]</span> - <?php _e("The user name being friended.", WPMUDEV_FRIENDS_I18N_DOMAIN); ?></li>
-				<li><span class="label">[FRIENDS_URL]</span> - <?php _e("The TO_USER primary site admin page for the Friend Request.", WPMUDEV_FRIENDS_I18N_DOMAIN); ?></li>
+				<li><span class="label">[SITE_NAME]</span> - <?php _e("The name of the sender's primary site", 'friends'); ?></li>
+				<li><span class="label">[SITE_URL]</span> - <?php _e("The URL of the sender's primary site", 'friends'); ?></li>
+				<li><span class="label">[FROM_USER]</span> - <?php _e("The user name requesting friendship.", 'friends'); ?></li>
+				<li><span class="label">[TO_USER]</span> - <?php _e("The user name being friended.", 'friends'); ?></li>
+				<li><span class="label">[FRIENDS_URL]</span> - <?php _e("The TO_USER primary site admin page for the Friend Request.", 'friends'); ?></li>
 			</ul>
 			<?php
 		}	
@@ -1680,7 +1677,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 /*
 			if (!isset($this->_config_data['templates']['friends_add_notification_subject'])) {
 				$this->_config_data['templates']['friends_add_notification_subject'] = 
-					__('[SITE_NAME] [FROM_USER] has added you as a friend', WPMUDEV_FRIENDS_I18N_DOMAIN);
+					__('[SITE_NAME] [FROM_USER] has added you as a friend', 'friends');
 			}
 			if (!isset($this->_config_data['templates']['friends_add_notification_content'])) {
 				$this->_config_data['templates']['friends_add_notification_content'] = 
@@ -1689,7 +1686,7 @@ if ( !class_exists( "WPMUDev_Friends" ) ) {
 We would like to inform you that [FROM_USER] has recently added you as a friend.
 
 Thanks,
-[SITE_NAME]', WPMUDEV_FRIENDS_I18N_DOMAIN);
+[SITE_NAME]', 'friends');
 			}
 */
 
@@ -1803,7 +1800,7 @@ function friends_add_notification( $to_uid, $from_uid ) {
 
 	return $wpmudev_friends->friends_add_notification( $to_uid, $from_uid );
 }
-
+/*
 function widget_friends_init() {
 	global $wpdb, $user_ID;
 
@@ -1812,8 +1809,8 @@ function widget_friends_init() {
 		global $wpdb, $user_ID;
 		$options = $newoptions = get_option('widget_friends');
 		if ( isset( $_POST['friends-submit'] ) ) {
-			$newoptions['friends-display'] = sanitize_text_field($_POST['friends-display']);
-			$newoptions['freinds-uid'] = intval($_POST['freinds-uid']);
+			$newoptions['friends_display_style'] = sanitize_text_field($_POST['friends_display_style']);
+			$newoptions['friends_uid'] = intval($_POST['friends_uid']);
 		}
 		if ( $options != $newoptions ) {
 			$options = $newoptions;
@@ -1829,8 +1826,8 @@ function widget_friends_init() {
             if ($tmp_blog_users_count > 1) {
                         $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = %d", $tmp_sent_message['sent_message_from_user_ID']));
                 ?>
-                <label for="freinds-uid" style="line-height:35px;display:block;"><?php _e('User', WPMUDEV_FRIENDS_I18N_DOMAIN); ?>:
-                <select name="freinds-uid" id="freinds-uid" style="width:65%;">
+                <label for="friends_uid" style="line-height:35px;display:block;"><?php _e('User', 'friends'); ?>:
+                <select name="friends_uid" id="friends_uid" style="width:65%;">
                 <?php
                 $query = "SELECT user_id FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpdb->base_prefix . $wpdb->blogid . "_capabilities'";
                 $tmp_users = $wpdb->get_results( $query, ARRAY_A );
@@ -1839,7 +1836,7 @@ function widget_friends_init() {
                         $tmp_username = $wpdb->get_var($wpdb->prepare("SELECT user_login FROM " . $wpdb->users . " WHERE ID = %d", $tmp_user['user_id']));
                         ?>
                         <option value="<?php echo $tmp_user['user_id']; ?>" <?php 
-						if ($options['freinds-uid'] == $tmp_user['user_id']){ 
+						if ($options['friends_uid'] == $tmp_user['user_id']){ 
 							echo 'selected="selected"'; } ?> ><?php echo $tmp_username; ?></option>
                         <?php
                     }
@@ -1856,14 +1853,14 @@ function widget_friends_init() {
                     $tmp_friends_uid = $user_ID;
                 }
                 ?>
-                <input type="hidden" name="freinds-uid" value="<?php echo $tmp_friends_uid; ?>" />
+                <input type="hidden" name="friends_uid" value="<?php echo $tmp_friends_uid; ?>" />
                 <?php
             }
             ?>
-            <label for="friends-display" style="line-height:35px;display:block;"><?php _e('Display', WPMUDEV_FRIENDS_I18N_DOMAIN); ?>:
-                <select name="friends-display" id="friends-display-type" style="width:65%;">
-                    <option value="mosaic" <?php if ($options['friends-display'] == 'mosaic'){ echo 'selected="selected"'; } ?> ><?php _e('Mosaic', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></option>
-                    <option value="list" <?php if ($options['friends-display'] == 'list'){ echo 'selected="selected"'; } ?> ><?php _e('List', WPMUDEV_FRIENDS_I18N_DOMAIN); ?></option>
+            <label for="friends_display_style" style="line-height:35px;display:block;"><?php _e('Display', 'friends'); ?>:
+                <select name="friends_display_style" id="friends_display_style-type" style="width:65%;">
+                    <option value="mosaic" <?php if ($options['friends_display_style'] == 'mosaic'){ echo 'selected="selected"'; } ?> ><?php _e('Mosaic', 'friends'); ?></option>
+                    <option value="list" <?php if ($options['friends_display_style'] == 'list'){ echo 'selected="selected"'; } ?> ><?php _e('List', 'friends'); ?></option>
                 </select>
             </label>
             <input type="hidden" name="friends-submit" id="friends-submit" value="1" />
@@ -1884,14 +1881,14 @@ function widget_friends_init() {
         }
 		?>
 		<?php echo $before_widget; ?>
-			<?php echo $before_title . __('Friends', WPMUDEV_FRIENDS_I18N_DOMAIN) . $after_title; ?>
+			<?php echo $before_title . __('Friends', 'friends') . $after_title; ?>
             <br />
             <?php
 				//=================================================//
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d", $options['freinds-uid'], '1');
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "friends WHERE user_ID = %d AND friend_approved = %d", $options['friends_uid'], '1');
 				$tmp_friends = $wpdb->get_results( $query, ARRAY_A );
 				if ( count( $tmp_friends ) > 0 ) {
-					if ( $options['friends-display'] == 'list' ){
+					if ( $options['friends_display_style'] == 'list' ){
 						echo '<ul>';
 						foreach ( $tmp_friends as $tmp_friend ){
 							echo '<li>';
@@ -1949,8 +1946,289 @@ function widget_friends_init() {
     <?php
 	}
 	// Tell Dynamic Sidebar about our new widget and its control
-    wp_register_sidebar_widget( 'widget_friends', __( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 'widget_friends' );
-	wp_register_widget_control( 'widget_friends', __( 'Friends', WPMUDEV_FRIENDS_I18N_DOMAIN ), 'widget_friends_control' );
+    //wp_register_sidebar_widget( 'widget_friends', __( 'Friends', 'friends' ), 'widget_friends' );
+	//wp_register_widget_control( 'widget_friends', __( 'Friends', 'friends' ), 'widget_friends_control' );
+	
+	
 
 }
 add_action('widgets_init', 'widget_friends_init');
+*/
+
+add_action('widgets_init', 'wpmudev_friends_widget_init');
+
+function wpmudev_friends_widget_init() {
+	register_widget('WPMUDev_Friends_Widget');
+}
+
+if ( !class_exists( "WPMUDev_Friends_Widget" ) ) {
+	class WPMUDev_Friends_Widget extends WP_Widget {
+
+		var $defaults = array();
+		
+		function __construct () {
+			
+			$this->defaults = array(
+				'friends_title'				=>	__('Friends', 'friends'),
+				'friends_title_append_name'	=>	false,
+				'friends_uid'				=>	'',
+				'friends_uid_limit'			=>	false,
+				'friends_display_style' 	=> 	'mosaic',
+				'friends_avatar_show'		=>	'enabled',
+				'friends_avatar_size'		=>	'32',
+				'friends_count'				=>	10,
+				'friends_display_random' 	=> 	'disabled',
+			);
+			
+			$widget_ops = array('classname' => __CLASS__, 'description' => __('Show Friends via a Widget .', 'friends'));
+			parent::WP_Widget(__CLASS__, __('Friends', 'friends'), $widget_ops);
+			
+		}
+		
+		function form($instance) {
+			global $wpdb, $user_ID;
+			
+			//echo "instance<pre>"; print_r($instance); echo "</pre>";
+			$instance = wp_parse_args( $instance, $this->defaults );
+
+			?>
+			<p><label for="<?php echo $this->get_field_id( 'friends_title' ); ?>"><?php
+					_e('Title', 'friends'); ?></label>:
+
+				<input type="text" id="<?php echo $this->get_field_id( 'friends_title' ); ?>" value="<?php echo $instance['friends_title']; ?>"
+					name="<?php echo $this->get_field_name( 'friends_title'); ?>" class="widefat" /><br />
+				<input type="checkbox" id="<?php echo $this->get_field_id( 'friends_title_append_name' ); ?>" name="<?php echo $this->get_field_name( 'friends_title_append_name' ); ?>" <?php checked( $instance['friends_title_append_name'], true) ?> /> <label for="<?php echo $this->get_field_id( 'friends_title_append_name' ); ?>"><?php _e('Append user display name to title', 'friends') ?></label>
+			</p>
+			
+			<p><label for="<?php echo $this->get_field_id('friends_uid') ?>"><?php _e('Show Friends for user', 'friends'); ?></label>:
+				<select class="widefat" name="<?php echo $this->get_field_name('friends_uid') ?>" id="<?php echo $this->get_field_id('friends_uid') ?>">
+					<option value="0" <?php selected($instance['friends_uid'], '0') ?>><?php _e('Current User', 'friends')  ?></option>
+				<?php
+					$user_query = new WP_User_Query( array( 'orderby' => 'display_name', 'order' => 'ASC', 'fields' => array('ID', 'display_name') ) );
+					if ( ! empty( $user_query->results ) ) {
+						foreach ( $user_query->results as $user ) {
+                        	?><option value="<?php echo $user->ID; ?>" <?php selected($instance['friends_uid'], $user->ID) ?>><?php echo $user->display_name; ?></option><?php
+						}
+					}
+				?>
+				</select><br />
+				<?php if (is_multisite()) { ?>
+				<input type="checkbox" id="<?php echo $this->get_field_id( 'friends_uid_limit' ); ?>" name="<?php echo $this->get_field_name( 'friends_uid_limit' ); ?>" <?php checked( $instance['friends_uid_limit'], true) ?> /> <label for="<?php echo $this->get_field_id( 'friends_uid_limit' ); ?>"><?php _e('Limit friends to current site', 'friends') ?></label>
+				<?php } ?>
+			</p>
+			
+            <p><label for="<?php echo $this->get_field_id('friends_display_style') ?>"><?php _e('Display style', 'friends'); ?></label>:
+                <select class="widefat" name="<?php echo $this->get_field_name('friends_display_style') ?>" id="<?php echo $this->get_field_id('friends_display_style') ?>">
+                    <option value="mosaic" <?php selected($instance['friends_display_style'], 'mosaic') ?> ><?php _e('Mosaic', 'friends'); ?></option>
+                    <option value="list" <?php selected($instance['friends_display_style'], 'list') ?> ><?php _e('List', 'friends'); ?></option>
+                </select>
+			</p>
+
+            <p><label for="<?php echo $this->get_field_id('friends_avatar_show') ?>"><?php _e('Show Avatars', 'friends'); ?></label>:
+                <select class="widefat" name="<?php echo $this->get_field_name('friends_avatar_show') ?>" id="<?php echo $this->get_field_id('friends_avatar_size') ?>">
+                    <option value="enabled" <?php selected($instance['friends_avatar_show'], 'enabled') ?> ><?php _e('Yes', 'friends'); ?></option>
+                    <option value="disabled" <?php selected($instance['friends_avatar_show'], 'disabled') ?> ><?php _e('No', 'friends'); ?></option>
+                </select>
+				<span class="description"><?php _e('forced yes for Mosaic', 'friends'); ?></span>
+			</p>
+
+			<p><label for="<?php echo $this->get_field_id( 'friends_avatar_size' ); ?>"><?php
+					_e('Avatar size', 'friends'); ?></label>:
+
+				<input type="text" id="<?php echo $this->get_field_id( 'friends_avatar_size' ); ?>" value="<?php echo $instance['friends_avatar_size']; ?>" name="<?php echo $this->get_field_name( 'friends_avatar_size'); ?>" class="widefat" />
+			</p>
+
+			<p><label for="<?php echo $this->get_field_id( 'friends_count' ); ?>"><?php
+					_e('Number of friends', 'friends'); ?></label>:
+
+				<input type="text" id="<?php echo $this->get_field_id( 'friends_count' ); ?>" value="<?php echo $instance['friends_count']; ?>"
+					name="<?php echo $this->get_field_name( 'friends_count'); ?>" class="widefat" />
+			</p>
+
+            <p><label for="<?php echo $this->get_field_id('friends_display_random') ?>"><?php _e('Show random selection', 'friends'); ?></label>:
+                <select class="widefat" name="<?php echo $this->get_field_name('friends_display_random') ?>" id="<?php echo $this->get_field_id('friends_display_random') ?>">
+                    <option value="enabled" <?php selected($instance['friends_display_random'], 'enabled') ?> ><?php _e('Yes', 'friends'); ?></option>
+                    <option value="disabled" <?php selected($instance['friends_display_random'], 'disabled') ?> ><?php _e('No', 'friends'); ?></option>
+                </select>
+			</p>
+            <input type="hidden" name="friends-submit" id="friends-submit" value="1" />
+	        <?php
+		}
+		
+		function update($new_instance, $old_instance) {
+			$instance = $old_instance;
+			
+			//echo "new_instance<pre>"; print_r($new_instance); echo "</pre>";
+			//die();
+			
+			if (isset($new_instance['friends_title'])) 
+				$instance['friends_title'] = esc_attr($new_instance['friends_title']);
+
+
+			if ((isset($new_instance['friends_title_append_name'])) && ($new_instance['friends_title_append_name'] == 'on'))
+				$instance['friends_title_append_name'] = true;
+			else
+				$instance['friends_title_append_name'] = false;
+
+
+			if (isset($new_instance['friends_uid'])) 
+				$instance['friends_uid'] = intval($new_instance['friends_uid']);
+
+
+			if ((isset($new_instance['friends_uid_limit'])) && ($new_instance['friends_uid_limit'] == 'on'))
+				$instance['friends_uid_limit'] = true;
+			else
+				$instance['friends_uid_limit'] = false;
+
+
+			if (isset($new_instance['friends_display_style'])) 
+				$instance['friends_display_style'] = esc_attr($new_instance['friends_display_style']);
+
+
+			if (isset($new_instance['friends_avatar_show'])) 
+				$instance['friends_avatar_show'] = esc_attr($new_instance['friends_avatar_show']);
+			
+
+			if (isset($new_instance['friends_avatar_size'])) 
+				$instance['friends_avatar_size'] = intval($new_instance['friends_avatar_size']);
+			
+
+			if (isset($new_instance['friends_count'])) 
+				$instance['friends_count'] = intval($new_instance['friends_count']);
+
+
+			if (isset($new_instance['friends_display_random'])) 
+				$instance['friends_display_random'] = esc_attr($new_instance['friends_display_random']);
+
+
+			if ($instance['friends_display_style'] == 'mosaic') 
+				$instance['friends_avatar_show'] = 'enabled';
+
+			return $instance;
+			
+		}
+		
+		function widget($args, $instance) {
+			global $wpdb, $user_ID, $messaging_current_version;
+			//extract($args);
+
+			//echo "this<pre>"; print_r($this); echo "</pre>";
+			//echo "args<pre>"; print_r($args); echo "</pre>";
+			//echo "instance<pre>"; print_r($instance); echo "</pre>";
+			$instance = wp_parse_args( $instance, $this->defaults );
+
+			if (($instance['friends_uid'] == "0") && ($user_ID > 0)) {
+				$instance['friends_uid'] = $user_ID;
+			}
+			//echo "instance<pre>"; print_r($instance); echo "</pre>";
+				
+			//=================================================//
+
+			if ($instance['friends_display_random'] == 'enabled') {
+				$order_by_str = ' ORDER BY RAND() ';
+			} else {
+				$order_by_str = '';
+			}
+			//$query = $wpdb->prepare("SELECT friend_user_ID FROM " . $wpdb->base_prefix . "friends as friends WHERE user_ID = %d AND friend_approved = %d ". $order_by_str ." LIMIT %d", $instance['friends_uid'], '1', $instance['friends_count']);
+
+//			$wpdb->usermeta . " WHERE meta_key = '" . $wpdb->base_prefix 
+//							. $wpdb->blogid . "_capabilities'");
+			if ($instance['friends_uid_limit'] == false) {
+				$query = $wpdb->prepare("SELECT f.friend_user_ID FROM " . $wpdb->base_prefix . "friends as f INNER JOIN " . $wpdb->base_prefix . "users as u ON f.friend_user_ID=u.ID WHERE f.user_ID = %d AND f.friend_approved = %d". $order_by_str ." LIMIT %d", $instance['friends_uid'], '1', $instance['friends_count']);
+			} if ($instance['friends_uid_limit'] == true) {
+				$query = $wpdb->prepare("SELECT f.friend_user_ID FROM " . $wpdb->base_prefix . "friends as f 
+					INNER JOIN ". $wpdb->base_prefix . "users as u ON f.friend_user_ID=u.ID 
+					INNER JOIN ". $wpdb->base_prefix ."usermeta as um ON f.friend_user_ID=um.user_id AND um.meta_key='". $wpdb->base_prefix. $wpdb->blogid ."_capabilities' 
+					WHERE f.user_ID = %d AND f.friend_approved = %d". $order_by_str ." LIMIT %d", $instance['friends_uid'], '1', $instance['friends_count']);
+				//echo "query[". $query ."]<br />";
+			}
+
+			$friends_ids = $wpdb->get_col( $query );
+			//echo "friends_ids<pre>"; print_r($friends_ids); echo "</pre>";
+			if ( !empty( $friends_ids ) ) {
+				
+				$user_query = new WP_User_Query( array( 
+					'include'	=>	$friends_ids,
+					'blog_id'	=>	null,
+					'orderby' 	=> 'display_name', 
+					'order'		=> 'ASC', 
+					'fields' => array('ID', 'display_name') ) );
+					
+				if ( ! empty( $user_query->results ) ) {
+				
+					echo $args['before_widget']; 
+
+					echo $args['before_title'];  
+					echo $instance['friends_title']; 
+					if ($instance['friends_title_append_name'] == true) {
+						echo get_the_author_meta( 'display_name', $instance['friends_uid'] );
+					}
+					echo $args['after_title']; 
+
+					if ( $instance['friends_display_style'] == 'list' ) {
+						echo '<ul class="wpmudev-friends-list">';
+					} else if ( $instance['friends_display_style'] == 'mosaic' ) {
+						echo '<div class="wpmudev-friends-list">';
+					}
+										
+					foreach ( $user_query->results as $user ) {
+						$primary_blog_ID = get_user_meta( $user->ID, 'primary_blog', true );
+						if (is_multisite())
+							$primary_blog_url = get_blog_option( $primary_blog_ID, 'siteurl' );
+						else
+							$primary_blog_url = get_option( 'siteurl' );
+						
+						if ( $instance['friends_display_style'] == 'list' ) {
+							echo '<li>';
+
+							if ($instance['friends_avatar_show'] == 'enabled') {
+								$friend_avatar = get_avatar($user->ID, $instance['friends_avatar_size'], '', $user->display_name);
+								echo $friend_avatar;
+							}
+							
+							if (!empty($primary_blog_url)) {
+								?><a class="wpmudev-friends-link" title="<?php echo esc_attr($user->display_name) ?>" href="<?php echo $primary_blog_url ?>"><?php echo $user->display_name ?></a><?php
+							} else {
+								echo $user->display_name;
+							}
+						} else if ( $instance['friends_display_style'] == 'mosaic' ) {
+							$friend_avatar = get_avatar($user->ID, $instance['friends_avatar_size'], '', $user->display_name);
+
+							if ( !empty($primary_blog_url)) {
+								?><a class="wpmudev-friends-link" href="<?php echo $primary_blog_url; ?>" title="<?php 
+									echo esc_attr($user->display_name); ?>"><?php echo $friend_avatar ?></a><?php
+							} else {
+								echo $friend_avatar;
+							}
+						}
+					}
+					if ( $instance['friends_display_style'] == 'list' ) {
+						echo '</ul>';
+					} else if ( $instance['friends_display_style'] == 'mosaic' ) {
+						echo '</div>';
+					}
+					
+					if ( $instance['friends_display_style'] == 'list' ) {
+						?>
+						<style type="text/css" media="screen">
+						.WPMUDev_Friends_Widget ul.wpmudev-friends-list { list-style: none; margin: 0; padding: 0; width: 100%;}
+						.WPMUDev_Friends_Widget ul.wpmudev-friends-list li { list-style: none; margin: 0 0 3px 0; padding: 0; width: 100%; }
+						.WPMUDev_Friends_Widget ul.wpmudev-friends-list li img { margin-right: 3px; width: <?php echo $instance['friends_avatar_size'] ?>px; height: <?php echo $instance['friends_avatar_size'] ?>px;}
+						.WPMUDev_Friends_Widget ul.wpmudev-friends-list li a { vertical-align: middle; line-height: <?php echo $instance['friends_avatar_size'] ?>px;}
+						</style>
+						<?php
+					} else if ( $instance['friends_display_style'] == 'mosaic' ) {
+						?>
+						<style type="text/css" media="screen">
+							.WPMUDev_Friends_Widget div.wpmudev-friends-list { width: 100%; }
+							.WPMUDev_Friends_Widget div.wpmudev-friends-list a.wpmudev-friends-link { text-decoration: none; border: 0px; width: <?php echo $instance['friends_avatar_size'] ?>px; height: <?php echo $instance['friends_avatar_size'] ?>px; }
+							.WPMUDev_Friends_Widget div.wpmudev-friends-list a.wpmudev-friends-link img { width: <?php echo $instance['friends_avatar_size'] ?>px; height: <?php echo $instance['friends_avatar_size'] ?>px;}
+						</style>
+						<?php
+					}
+				}
+				echo $args['after_widget']; 
+			}
+		}
+	}
+}

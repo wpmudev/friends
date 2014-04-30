@@ -3,6 +3,11 @@ Authors: Paul Menard (Incsub)
 
 == Changelog ==
 
+= 1.3.2 =
+* Reworked widget code to bring it up to acceptable standard using the modern WordPress widget API. 
+* Updated widget user queries to use WP_User_Query where possible instead of direct queries to users table.
+* Added many new widget options. Widget title. Append user name to widget title. Display Avatars, Set Avatar size. Number of Friends to display, Display random selection of Friends. Limit friends to current site (Multisite only). 
+
 = 1.3.1.3 =
 * Corrected undefined var Notice when searching users.
 
