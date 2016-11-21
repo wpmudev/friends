@@ -1981,7 +1981,7 @@ if ( !class_exists( "WPMUDev_Friends_Widget" ) ) {
 			);
 			
 			$widget_ops = array('classname' => __CLASS__, 'description' => __('Show Friends via a Widget .', 'friends'));
-			parent::WP_Widget(__CLASS__, __('Friends', 'friends'), $widget_ops);
+			parent::__construct(__CLASS__, __('Friends', 'friends'), $widget_ops);
 			
 		}
 		
